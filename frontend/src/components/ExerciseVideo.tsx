@@ -16,7 +16,17 @@ export const ExerciseVideo = ({ url, title }: ExerciseVideoProps) => {
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
       const match = url.match(regExp);
       const id = match?.[2]?.length === 11 ? match[2] : null;
-      return id ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&autoplay=0` : url;
+      if (!id) return url;
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const params = new URLSearchParams({
+        rel: '0',
+        modestbranding: '1',
+        autoplay: '0',
+        playsinline: '1',
+        enablejsapi: '1',
+        origin,
+      });
+      return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
     } catch (e) {
       return url;
     }
