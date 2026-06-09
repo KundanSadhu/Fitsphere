@@ -8,8 +8,8 @@ import { AnimatePresence } from 'motion/react';
 interface ShopProps {
   products: Product[];
   cart: CartItem[];
-  shopCategory: 'All' | 'Equipment' | 'Apparel';
-  setShopCategory: (cat: 'All' | 'Equipment' | 'Apparel') => void;
+  shopCategory: 'All' | 'Equipment' | 'Apparel' | 'Supplements';
+  setShopCategory: (cat: 'All' | 'Equipment' | 'Apparel' | 'Supplements') => void;
   onAddToCart: (p: Product) => void;
   onUpdateQuantity: (id: string, delta: number) => void;
   onClearCart: () => void;
@@ -48,7 +48,7 @@ export function Shop({
 
         {/* Categories togglers */}
         <div className="flex gap-2 overflow-x-auto pb-1 shrink-0">
-          {['All', 'Equipment', 'Apparel'].map((cat) => (
+          {['All', 'Supplements', 'Equipment', 'Apparel'].map((cat) => (
             <button
               key={cat}
               id={`btn-shop-cat-${cat}`}

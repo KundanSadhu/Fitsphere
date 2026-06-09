@@ -80,7 +80,7 @@ export default function App() {
   });
 
   // Shop filter state
-  const [shopCategory, setShopCategory] = useState<'All' | 'Equipment' | 'Apparel'>('All');
+  const [shopCategory, setShopCategory] = useState<'All' | 'Equipment' | 'Apparel' | 'Supplements'>('All');
 
   // Attendance scanner simulation states
   const [checkInStatus, setCheckInStatus] = useState<'idle' | 'scanning' | 'success'>('idle');
@@ -531,7 +531,7 @@ export default function App() {
           />
         ) : (
           /* Logged In Dashboard Frame with white backgrounds */
-          <div id="app-workspace-container" className="flex h-screen bg-white overflow-hidden relative">
+          <div id="app-workspace-container" className="flex h-dvh bg-white overflow-hidden relative">
             
             {/* Modular Sidebar menu (desktop) */}
             <SidebarNavigation 

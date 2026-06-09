@@ -1,5 +1,5 @@
 import { 
-  LayoutDashboard, Dumbbell, Apple, TrendingUp, Bot, Settings, Menu 
+  LayoutDashboard, Dumbbell, Apple, TrendingUp, Bot, ShoppingBag, Menu 
 } from 'lucide-react';
 
 interface MobileNavigationProps {
@@ -15,7 +15,7 @@ export function MobileNavigation({ activeTab, setActiveTab, onOpenExpandedMenu }
     { id: 'workout', icon: Dumbbell, label: 'Workouts' },
     { id: 'nutrition', icon: Apple, label: 'Nutrition' },
     { id: 'progress', icon: TrendingUp, label: 'Progress' },
-    { id: 'ai-coach', icon: Bot, label: 'Coach' }
+    { id: 'shop', icon: ShoppingBag, label: 'Shop' }
   ];
 
   return (
