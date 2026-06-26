@@ -4,35 +4,188 @@
 @theme {
   --font-sans: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  /* Static brand colors (same in all modes) */
+  --color-primary: #2AC4B5;
+  --color-primary-hover: #23A89B;
+  --color-secondary: #D4AF37;
+  --color-secondary-muted: rgba(212, 175, 55, 0.15);
+  --color-cta-text: #FFFFFF;
 }
 
+/* ====================================================================
+   THEME CSS CUSTOM PROPERTIES — Dark/Light Mode via .dark class on <html>
+   ==================================================================== */
+:root {
+  --bg-primary: #F0F4F8;
+  --bg-secondary: #E2E8F0;
+  --bg-tertiary: #CBD5E1;
+  --text-primary: #1A2332;
+  --text-muted: rgba(26, 35, 50, 0.70);
+  --text-dim: rgba(26, 35, 50, 0.45);
+  --card-bg: rgba(212, 175, 55, 0.05);
+  --card-border: rgba(212, 175, 55, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.70);
+  --glass-border: rgba(255, 255, 255, 0.30);
+  --glow-color: rgba(42, 196, 181, 0.20);
+  --heading-weight: 700;
+  --body-opacity: 0.75;
+  --gradient-hero: linear-gradient(180deg, #F0F4F8 0%, rgba(212, 175, 55, 0.08) 100%);
+}
+
+.dark {
+  --bg-primary: #0B1A2E;
+  --bg-secondary: #0F2240;
+  --bg-tertiary: #1A2D4A;
+  --text-primary: #E8F0FE;
+  --text-muted: rgba(232, 240, 254, 0.70);
+  --text-dim: rgba(232, 240, 254, 0.45);
+  --card-bg: rgba(212, 175, 55, 0.08);
+  --card-border: rgba(212, 175, 55, 0.20);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.10);
+  --glow-color: rgba(42, 196, 181, 0.30);
+  --gradient-hero: linear-gradient(180deg, #0B1A2E 0%, rgba(212, 175, 55, 0.10) 100%);
+}
+
+/* ====================================================================
+   THEME UTILITY CLASSES (use these instead of hardcoded colors)
+   ==================================================================== */
 @layer utilities {
-  .shadow-soft-sm {
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  }
-  .shadow-[4px_4px_0px_0px_#191A23] {
-    box-shadow: 4px 4px 0px 0px #191A23;
-  }
-  .shadow-[6px_6px_0px_0px_#191A23] {
-    box-shadow: 6px 6px 0px 0px #191A23;
-  }
-  .shadow-soft-md {
-    box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-  }
+  /* Backgrounds — 60% rule */
+  .bg-theme { background-color: var(--bg-primary); }
+  .bg-theme-secondary { background-color: var(--bg-secondary); }
+  .bg-theme-tertiary { background-color: var(--bg-tertiary); }
+  .bg-card { background-color: var(--card-bg); }
+  .bg-glass { background-color: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+  /* Text — 10% primary reserved for CTAs only */
+  .text-theme { color: var(--text-primary); }
+  .text-theme-muted { color: var(--text-muted); }
+  .text-theme-dim { color: var(--text-dim); }
+  .text-gradient { background: linear-gradient(135deg, #2AC4B5, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .text-gradient-primary { background: linear-gradient(135deg, #2AC4B5, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  /* Borders */
+  .border-theme { border-color: var(--card-border); }
+  .border-theme-secondary { border-color: var(--bg-tertiary); }
+
+  /* Glow effects */
+  .glow-primary { box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color); }
+  .glow-text { text-shadow: 0 0 20px var(--glow-color); }
+
+  /* Glassmorphism cards */
+  .glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); }
+  .glass-strong { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15); }
+
+  /* CTA Buttons — Prompt 4 */
+  .btn-cta { background-color: #2AC4B5; color: #FFFFFF; border-radius: 8px; font-weight: 700; transition: all 0.2s ease; cursor: pointer; }
+  .btn-cta:hover { background-color: #23A89B; box-shadow: 0 8px 20px rgba(42, 196, 181, 0.40); transform: translateY(-1px); }
+  .btn-cta:active { transform: translateY(0px); box-shadow: none; }
+
+  /* Pill CTAs */
+  .btn-cta-pill { background-color: #2AC4B5; color: #FFFFFF; border-radius: 50px; font-weight: 700; transition: all 0.2s ease; cursor: pointer; }
+  .btn-cta-pill:hover { background-color: #23A89B; box-shadow: 0 8px 20px rgba(42, 196, 181, 0.40); transform: translateY(-1px); }
+
+  /* Card styles */
+  .card-modern { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; }
+  .card-brutal { background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 24px; box-shadow: 4px 4px 0px var(--card-border); }
+
+  /* Section headers with gradient */
+  .section-title { font-weight: 700; color: var(--text-primary); }
+  .section-title-gradient { background: linear-gradient(135deg, #2AC4B5, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 700; }
+
+  /* Price tags — Prompt 6 */
+  .price-tag { color: #2AC4B5; font-weight: 700; }
+
+  /* Best Seller / Gold badges */
+  .badge-gold { background: linear-gradient(135deg, #D4AF37, #F5D77B); color: #1A2332; font-weight: 700; border: none; }
+
+  /* Nav link styles — Prompt 3 */
+  .nav-link { color: var(--text-muted); transition: color 0.2s ease; font-weight: 600; }
+  .nav-link:hover { color: #2AC4B5; }
+  .nav-link-active { color: #2AC4B5; font-weight: 700; }
+
+  /* Notification bubble */
+  .notification-bubble { background: #1A2332; color: #E8F0FE; }
+  .dark .notification-bubble { background: #E8F0FE; color: #1A2332; }
 }
 
-/* Custom modern scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ====================================================================
+   TYPOGRAPHY — Prompt 7
+   ==================================================================== */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 700;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+
+p, li, .body-text {
+  color: var(--text-primary);
+  opacity: var(--body-opacity);
 }
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
+
+a {
+  color: #D4AF37;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+a:hover {
+  text-decoration: underline;
+}
+
+/* ====================================================================
+   SCROLLBARS
+   ==================================================================== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ====================================================================
+   SHADOW UTILITIES (keep existing + add theme-aware versions)
+   ==================================================================== */
+.shadow-soft-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.shadow-soft-md { box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
+.shadow-brutal { box-shadow: 4px 4px 0px var(--card-border); }
+.shadow-brutal-lg { box-shadow: 6px 6px 0px var(--card-border); }
+.shadow-brutal-xl { box-shadow: 8px 8px 0px var(--card-border); }
+.shadow-brutal-sm { box-shadow: 2px 2px 0px var(--card-border); }
+
+/* Legacy shadow support (for backward compat) */
+.shadow-\[4px_4px_0px_0px_\#191A23\] { box-shadow: 4px 4px 0px var(--card-border); }
+.shadow-\[6px_6px_0px_0px_\#191A23\] { box-shadow: 6px 6px 0px var(--card-border); }
+.shadow-\[4px_4px_0px_\#191A23\] { box-shadow: 4px 4px 0px var(--card-border); }
+.shadow-\[2px_2px_0px_\#191A23\] { box-shadow: 2px 2px 0px var(--card-border); }
+.shadow-\[3px_3px_0px_\#191A23\] { box-shadow: 3px 3px 0px var(--card-border); }
+.shadow-\[5px_5px_0px_0px_\#191A23\] { box-shadow: 5px 5px 0px var(--card-border); }
+.shadow-\[6px_6px_0px_0px_\#191A23\] { box-shadow: 6px 6px 0px var(--card-border); }
+.shadow-\[8px_8px_0px_0px_\#191A23\] { box-shadow: 8px 8px 0px var(--card-border); }
+.shadow-\[2\.5px_2\.5px_0px_\#191A23\] { box-shadow: 2.5px 2.5px 0px var(--card-border); }
+.shadow-\[1\.5px_1\.5px_0px_\#191A23\] { box-shadow: 1.5px 1.5px 0px var(--card-border); }
+.shadow-\[1px_1px_0px_\#191A23\] { box-shadow: 1px 1px 0px var(--card-border); }
+.shadow-\[inset_0_0_40px_rgba\(0\2c 0\2c 0\2c 0\.8\)\] { box-shadow: inset 0 0 40px rgba(0,0,0,0.8); }
+
+/* ====================================================================
+   ANIMATIONS
+   ==================================================================== */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px var(--glow-color); }
+  50% { box-shadow: 0 0 24px var(--glow-color); }
+}
+.animate-slide-up { animation: slide-up 0.3s ease-out; }
+.animate-fade-in { animation: fade-in 0.3s ease-out; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+/* ====================================================================
+   DARK MODE TRANSITION
+   ==================================================================== */
+html, body, #root, .theme-transition, .theme-transition * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }

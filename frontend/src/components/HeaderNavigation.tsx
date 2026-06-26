@@ -1,4 +1,4 @@
-import { ChevronRight, Trophy, Menu } from 'lucide-react';
+import { ChevronRight, Trophy, Menu, Sun, Moon } from 'lucide-react';
 import { User } from '../types';
 import { StreakDisplay } from './StreakDisplay';
 import { GoogleFitIndicator } from './GoogleFitIndicator';
@@ -8,9 +8,11 @@ interface HeaderNavigationProps {
   user: User;
   isSidebarOpen?: boolean;
   onToggleSidebar?: () => void;
+  isDarkMode?: boolean;
+  onToggleDarkMode?: () => void;
 }
 
-export function HeaderNavigation({ activeTab, user, isSidebarOpen, onToggleSidebar }: HeaderNavigationProps) {
+export function HeaderNavigation({ activeTab, user, isSidebarOpen, onToggleSidebar, isDarkMode, onToggleDarkMode }: HeaderNavigationProps) {
   // Human readable title
   const getTabTitle = (tab: string) => {
     switch (tab) {
@@ -30,45 +32,54 @@ export function HeaderNavigation({ activeTab, user, isSidebarOpen, onToggleSideb
   return (
     <header 
       id="app-header-navigation" 
-      className="h-16 bg-white border-b-2 border-[#191A23] flex items-center justify-between px-6 z-30 shrink-0 select-none"
+      className="h-16 bg-theme border-b-2 border-theme flex items-center justify-between px-6 z-30 shrink-0 select-none theme-transition"
     >
       {/* Navigation breadcrumbs */}
       <div className="flex items-center gap-2">
         <button 
           onClick={onToggleSidebar}
-          className="hidden lg:flex p-1.5 mr-2 rounded-lg bg-white border-2 border-[#191A23] text-[#191A23] hover:bg-[#B9FF66] transition-colors shadow-[2px_2px_0px_#191A23] active:translate-y-0.5 active:shadow-none"
+          className="hidden lg:flex p-1.5 mr-2 rounded-lg bg-card border-2 border-theme text-theme hover:bg-primary hover:text-white transition-colors shadow-brutal-sm active:translate-y-0.5 active:shadow-none"
           title="Toggle Sidebar"
         >
           <Menu className="w-4 h-4" />
         </button>
-        <span className="bg-[#B9FF66] text-[#191A23] px-2.5 py-1 rounded-md border-2 border-[#191A23] text-xs font-black uppercase tracking-wider leading-none">
+        <span className="bg-primary text-white px-2.5 py-1 rounded-md border-2 border-primary text-xs font-black uppercase tracking-wider leading-none">
           FitSphere
         </span>
-        <ChevronRight className="w-4 h-4 text-[#191A23]" />
-        <span className="text-[#191A23] text-sm font-black capitalize leading-none font-mono">
+        <ChevronRight className="w-4 h-4 text-theme-muted" />
+        <span className="text-theme text-sm font-black capitalize leading-none font-mono">
           {getTabTitle(activeTab)}
         </span>
       </div>
 
       <div className="flex items-center gap-3 sm:gap-4">
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={onToggleDarkMode}
+          className="p-2 rounded-xl border border-theme text-theme-muted hover:text-primary hover:border-primary transition-all cursor-pointer"
+          title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+
         {/* Google Fit Sync Connection Indicator Badge */}
         <GoogleFitIndicator />
 
-        <div className="hidden sm:block w-0.5 h-6 bg-[#191A23]" />
+        <div className="hidden sm:block w-0.5 h-6 bg-theme-muted/30" />
 
         {/* Streak progress display widget */}
-        <div className="border-2 border-[#191A23] rounded-xl overflow-hidden shadow-[2px_2px_0px_#191A23]">
+        <div className="border-2 border-theme rounded-xl overflow-hidden shadow-brutal-sm">
           <StreakDisplay streak={user.streak} />
         </div>
 
-        <div className="w-0.5 h-6 bg-[#191A23]" />
+        <div className="w-0.5 h-6 bg-theme-muted/30" />
 
         {/* Loyalty reward points count */}
         <div 
           id="loyalty-points-pill" 
-          className="flex items-center gap-1.5 bg-[#B9FF66] text-[#191A23] border-2 border-[#191A23] px-3.5 py-1 rounded-xl text-xs font-black font-mono shadow-[2px_2px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all cursor-pointer"
+          className="flex items-center gap-1.5 bg-primary text-white border-2 border-primary px-3.5 py-1 rounded-xl text-xs font-black font-mono shadow-brutal-sm hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all cursor-pointer"
         >
-          <Trophy className="w-3.5 h-3.5 fill-[#191A23]" />
+          <Trophy className="w-3.5 h-3.5 fill-white" />
           <span>{user.points} PTS</span>
         </div>
 
@@ -77,7 +88,7 @@ export function HeaderNavigation({ activeTab, user, isSidebarOpen, onToggleSideb
           src={user.photoUrl}
           alt={user.name}
           referrerPolicy="no-referrer"
-          className="w-8 h-8 rounded-lg object-cover border-2 border-[#191A23] block lg:hidden"
+          className="w-8 h-8 rounded-lg object-cover border-2 border-theme block lg:hidden"
         />
       </div>
     </header>

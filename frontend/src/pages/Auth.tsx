@@ -137,18 +137,18 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
 
   if (showEmailGoogleDialog) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
-        <div className="w-full max-w-md bg-white border-2 border-[#191A23] rounded-[24px] shadow-[6px_6px_0px_#191A23] p-8 relative">
+      <div className="min-h-screen bg-theme flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-md bg-card border-2 border-theme rounded-[24px] shadow-brutal-xl p-8 relative">
           <button
             onClick={() => { setShowEmailGoogleDialog(false); setGoogleEmail(''); setError(null); }}
-            className="absolute top-4 right-4 p-1.5 hover:bg-slate-100 rounded-lg transition-all"
+            className="absolute top-4 right-4 p-1.5 hover:bg-theme-secondary rounded-lg transition-all text-theme-muted"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
 
           <div className="text-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-white border-2 border-[#191A23] shadow-[4px_4px_0px_#191A23] flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-card border-2 border-theme shadow-brutal flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -156,28 +156,28 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
             </div>
-            <h1 className="text-2xl font-black text-[#191A23] uppercase tracking-tight">Sign in with Google</h1>
-            <p className="text-sm font-semibold text-slate-500 mt-2">Enter your Google email to continue</p>
+            <h1 className="text-2xl font-black text-theme uppercase tracking-tight">Sign in with Google</h1>
+            <p className="text-sm font-semibold text-theme-muted mt-2">Enter your Google email to continue</p>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-rose-50 border-2 border-[#191A23] rounded-xl text-rose-600 text-xs font-black">
+            <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950 border-2 border-theme rounded-xl text-rose-600 text-xs font-black">
               {error}
             </div>
           )}
 
           <form onSubmit={handleGoogleEmailSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-black text-[#191A23] uppercase tracking-wider mb-1.5">Google Email</label>
+              <label className="block text-xs font-black text-theme uppercase tracking-wider mb-1.5">Google Email</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-4 w-4 text-slate-400" />
+                  <Mail className="h-4 w-4 text-theme-dim" />
                 </div>
                 <input
                   type="email"
                   value={googleEmail}
                   onChange={(e) => setGoogleEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white border-2 border-[#191A23] rounded-xl text-sm font-semibold text-[#191A23] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#B9FF66] focus:border-[#191A23] transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-theme-secondary border-2 border-theme rounded-xl text-sm font-semibold text-theme placeholder-theme-dim focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   placeholder="you@gmail.com"
                   required
                   autoFocus
@@ -188,7 +188,10 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#191A23] text-white py-4 rounded-xl font-black text-sm uppercase tracking-wider border-2 border-[#191A23] hover:bg-[#2A2B36] transition-all shadow-[4px_4px_0px_#B9FF66] active:translate-y-1 active:translate-x-1 active:shadow-[1px_1px_0px_#B9FF66] disabled:opacity-70 flex justify-center items-center"
+              className="w-full bg-primary text-white py-4 rounded-xl font-black text-sm uppercase tracking-wider border-2 border-primary hover:bg-primary-hover transition-all shadow-[4px_4px_0px_var(--color-secondary)] hover:shadow-[6px_6px_0px_var(--color-secondary)] active:translate-y-1 active:translate-x-1 active:shadow-[1px_1px_0px_var(--color-secondary)] disabled:opacity-70 flex justify-center items-center"
+              style={{ boxShadow: '4px 4px 0px #D4AF37' }}
+              onMouseEnter={(e) => { if (!(e.target as HTMLButtonElement).disabled) e.currentTarget.style.boxShadow = '6px 6px 0px #D4AF37'; }}
+              onMouseLeave={(e) => { if (!(e.target as HTMLButtonElement).disabled) e.currentTarget.style.boxShadow = '4px 4px 0px #D4AF37'; }}
             >
               {isLoading ? (
                 <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -196,8 +199,8 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
             </button>
           </form>
 
-          <p className="text-xs text-slate-400 text-center mt-4 font-semibold">
-            Note: Configure <code className="bg-slate-100 px-1.5 py-0.5 rounded">VITE_GOOGLE_CLIENT_ID</code> in <code className="bg-slate-100 px-1.5 py-0.5 rounded">.env.local</code> to enable real Google OAuth.
+          <p className="text-xs text-theme-dim text-center mt-4 font-semibold">
+            Note: Configure <code className="bg-theme-secondary px-1.5 py-0.5 rounded text-theme">VITE_GOOGLE_CLIENT_ID</code> in <code className="bg-theme-secondary px-1.5 py-0.5 rounded text-theme">.env.local</code> to enable real Google OAuth.
           </p>
         </div>
       </div>
@@ -205,23 +208,23 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white border-2 border-[#191A23] rounded-[24px] shadow-[6px_6px_0px_#191A23] p-8">
+    <div className="min-h-screen bg-theme flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-md bg-card border-2 border-theme rounded-[24px] shadow-brutal-xl p-8">
         
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-[#B9FF66] border-2 border-[#191A23] shadow-[4px_4px_0px_#191A23] flex items-center justify-center mx-auto mb-4">
-            <Bot className="w-8 h-8 text-[#191A23] stroke-[2.5]" />
+          <div className="w-16 h-16 rounded-2xl bg-primary border-2 border-primary shadow-brutal flex items-center justify-center mx-auto mb-4">
+            <Bot className="w-8 h-8 text-white stroke-[2.5]" />
           </div>
-          <h1 className="text-2xl font-black text-[#191A23] uppercase tracking-tight">
+          <h1 className="text-2xl font-black text-theme uppercase tracking-tight">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
-          <p className="text-sm font-semibold text-slate-500 mt-2">
+          <p className="text-sm font-semibold text-theme-muted mt-2">
             {isLogin ? 'Sign in to access your tracking dashboard' : 'Join FitSphere to power your workouts'}
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-rose-50 border-2 border-[#191A23] rounded-xl text-rose-600 text-xs font-black shadow-[3px_3px_0px_#191A23]">
+          <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-950 border-2 border-theme rounded-xl text-rose-600 text-xs font-black shadow-brutal">
             {error}
           </div>
         )}
@@ -229,10 +232,10 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
         <button
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          className="w-full bg-white text-[#191A23] py-4 rounded-xl font-black text-sm uppercase tracking-wider border-2 border-[#191A23] hover:bg-[#F3F3F3] transition-all shadow-[4px_4px_0px_#191A23] active:translate-y-1 active:translate-x-1 active:shadow-none flex items-center justify-center gap-3 disabled:opacity-70 mb-4"
+          className="w-full bg-card text-theme py-4 rounded-xl font-black text-sm uppercase tracking-wider border-2 border-theme hover:bg-theme-secondary transition-all shadow-brutal active:translate-y-1 active:translate-x-1 active:shadow-none flex items-center justify-center gap-3 disabled:opacity-70 mb-4"
         >
           {isLoading ? (
-             <span className="w-5 h-5 border-2 border-[#191A23] border-t-transparent rounded-full animate-spin"></span>
+             <span className="w-5 h-5 border-2 border-theme border-t-transparent rounded-full animate-spin"></span>
           ) : (
             <>
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -248,26 +251,26 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t-2 border-slate-100"></div>
+            <div className="w-full border-t-2 border-theme"></div>
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="px-3 bg-white text-slate-500 font-extrabold uppercase">Or continue with email</span>
+            <span className="px-3 bg-card text-theme-muted font-extrabold uppercase">Or continue with email</span>
           </div>
         </div>
 
         <form onSubmit={handleEmailAuth} className="space-y-4 mb-6">
           {!isLogin && (
             <div>
-              <label className="block text-xs font-black text-[#191A23] uppercase tracking-wider mb-1.5">Full Name</label>
+              <label className="block text-xs font-black text-theme uppercase tracking-wider mb-1.5">Full Name</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <UserIcon className="h-4 w-4 text-slate-400" />
+                  <UserIcon className="h-4 w-4 text-theme-dim" />
                 </div>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white border-2 border-[#191A23] rounded-xl text-sm font-semibold text-[#191A23] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#B9FF66] focus:border-[#191A23] transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-theme-secondary border-2 border-theme rounded-xl text-sm font-semibold text-theme placeholder-theme-dim focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   placeholder="Athlete Name"
                   required={!isLogin}
                 />
@@ -276,16 +279,16 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
           )}
 
           <div>
-            <label className="block text-xs font-black text-[#191A23] uppercase tracking-wider mb-1.5">Email Address</label>
+            <label className="block text-xs font-black text-theme uppercase tracking-wider mb-1.5">Email Address</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-4 w-4 text-slate-400" />
+                <Mail className="h-4 w-4 text-theme-dim" />
               </div>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-[#191A23] rounded-xl text-sm font-semibold text-[#191A23] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#B9FF66] focus:border-[#191A23] transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-theme-secondary border-2 border-theme rounded-xl text-sm font-semibold text-theme placeholder-theme-dim focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                 placeholder="athlete@example.com"
                 required
               />
@@ -293,16 +296,16 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-black text-[#191A23] uppercase tracking-wider mb-1.5">Password</label>
+            <label className="block text-xs font-black text-theme uppercase tracking-wider mb-1.5">Password</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-4 w-4 text-slate-400" />
+                <Lock className="h-4 w-4 text-theme-dim" />
               </div>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-[#191A23] rounded-xl text-sm font-semibold text-[#191A23] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#B9FF66] focus:border-[#191A23] transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-theme-secondary border-2 border-theme rounded-xl text-sm font-semibold text-theme placeholder-theme-dim focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                 placeholder="••••••••"
                 required
               />
@@ -312,7 +315,10 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#191A23] text-white py-4 rounded-xl font-black text-sm uppercase tracking-wider border-2 border-[#191A23] hover:bg-[#2A2B36] transition-all shadow-[4px_4px_0px_#B9FF66] active:translate-y-1 active:translate-x-1 active:shadow-[1px_1px_0px_#B9FF66] disabled:opacity-70 flex justify-center items-center"
+            className="w-full bg-primary text-white py-4 rounded-xl font-black text-sm uppercase tracking-wider border-2 border-primary hover:bg-primary-hover transition-all disabled:opacity-70 flex justify-center items-center"
+            style={{ boxShadow: '4px 4px 0px #D4AF37' }}
+            onMouseEnter={(e) => { if (!(e.target as HTMLButtonElement).disabled) e.currentTarget.style.boxShadow = '6px 6px 0px #D4AF37'; }}
+            onMouseLeave={(e) => { if (!(e.target as HTMLButtonElement).disabled) e.currentTarget.style.boxShadow = '4px 4px 0px #D4AF37'; }}
           >
             {isLoading ? (
                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -320,20 +326,20 @@ export function AuthPage({ onSuccess, neonAvailable }: AuthPageProps) {
           </button>
         </form>
 
-        <p className="text-center text-xs font-black text-slate-500 uppercase mt-4">
+        <p className="text-center text-xs font-black text-theme-muted uppercase mt-4">
           {isLogin ? "Don't have an account?" : "Already have an account?"}
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="ml-2 text-[#191A23] bg-[#B9FF66] px-2 py-0.5 rounded shadow-[2px_2px_0px_#191A23] hover:translate-y-px hover:translate-x-px hover:shadow-[1px_1px_0px_#191A23] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none focus:outline-none transition-all"
+            className="ml-2 text-white bg-primary px-2 py-0.5 rounded shadow-brutal-sm hover:translate-y-px hover:translate-x-px active:translate-y-0.5 active:translate-x-0.5 active:shadow-none focus:outline-none transition-all"
           >
             {isLogin ? 'Sign Up' : 'Sign In'}
           </button>
         </p>
 
-        <div className="mt-4 pt-4 border-t-2 border-slate-100">
+        <div className="mt-4 pt-4 border-t-2 border-theme">
           <button
             onClick={handleGuestMode}
-            className="w-full bg-[#B9FF66] text-[#191A23] py-4 rounded-xl font-black text-sm uppercase tracking-wider border-2 border-[#191A23] hover:bg-[#a0e55a] transition-all shadow-[4px_4px_0px_#191A23] active:translate-y-1 active:translate-x-1 active:shadow-none flex items-center justify-center gap-3"
+            className="w-full bg-primary text-white py-4 rounded-xl font-black text-sm uppercase tracking-wider border-2 border-primary hover:bg-primary-hover transition-all shadow-brutal active:translate-y-1 active:translate-x-1 active:shadow-none flex items-center justify-center gap-3"
           >
             <LogIn className="w-5 h-5" />
             Continue as Guest

@@ -47,14 +47,14 @@ export function Dashboard({ user, workoutPlans, selectedDayIndex, weightHistory 
   }, []);
 
   return (
-    <div className="space-y-6 bg-white text-left">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+    <div className="space-y-6 bg-theme text-left">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl md:text-2xl font-black text-[#191A23] tracking-tight leading-none">
+          <h1 className="text-xl md:text-2xl font-black text-theme tracking-tight leading-none">
             Dashboard Console
           </h1>
-          <p className="text-xs text-slate-500 mt-1 font-semibold">
-            Welcome back! Track your daily movements, nutrition goals, and progressive muscular logs in one clean workspace.
+          <p className="text-xs text-theme-muted mt-1 font-semibold">
+            Displaying biometric goal data, cross-planar summary and current ongoing metrics.
           </p>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Sun, Moon } from 'lucide-react';
 
 import { LandingPage } from './pages/LandingPage';
 import { Onboarding } from './pages/Onboarding';
@@ -25,6 +25,24 @@ import { AuthPage } from './pages/Auth';
 import { api } from './lib/api';
 
 export default function App() {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('fitsphere_theme');
+    if (saved) return saved === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('fitsphere_theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
+
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [showAuthPage, setShowAuthPage] = useState<boolean>(true);
   const [onboardingStep, setOnboardingStep] = useState<number>(0);
@@ -350,30 +368,37 @@ export default function App() {
   };
 
   return (
-    <div id="full-workspace-view" className="min-h-screen bg-white font-sans antialiased text-slate-900 flex flex-col justify-between">
+    <div id="full-workspace-view" className="min-h-screen bg-theme font-sans antialiased text-theme theme-transition flex flex-col justify-between">
       {hudIndicator && (
-        <div id="hud-notification-bubble" className="fixed top-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-5 py-3 rounded-2xl text-[11px] font-black font-mono tracking-wide z-50 shadow-2xl flex items-center gap-2.5 animate-bounce">
-          <Sparkles className="w-4 h-4 text-indigo-400 animate-spin" />
+        <div id="hud-notification-bubble" className="fixed top-6 left-1/2 transform -translate-x-1/2 notification-bubble px-5 py-3 rounded-2xl text-[11px] font-black font-mono tracking-wide z-50 shadow-2xl flex items-center gap-2.5 animate-bounce">
+          <Sparkles className="w-4 h-4 text-primary animate-spin" />
           <span>{hudIndicator}</span>
         </div>
       )}
 
       {!isAuthenticated && (
-        <header id="public-sticky-header" className="sticky top-0 bg-white border-b border-slate-100 z-40 transition-all">
+        <header id="public-sticky-header" className="sticky top-0 bg-theme border-b border-theme z-40 transition-all theme-transition">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-md text-white font-extrabold text-xs font-mono">FΩ</div>
-              <span className="text-lg font-black text-slate-900 tracking-tight">FitSphere <span className="text-indigo-600">AI</span></span>
+              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md text-white font-extrabold text-xs font-mono">FΩ</div>
+              <span className="text-lg font-black text-theme tracking-tight">FitSphere <span className="text-primary">AI</span></span>
             </div>
             <div className="flex items-center gap-4">
-              <button id="btn-public-signin" onClick={() => setShowAuthPage(true)} className="text-slate-600 hover:text-indigo-600 text-xs font-black cursor-pointer transition-all">Sign In</button>
-              <button id="btn-public-join" onClick={startOnboardingSequence} className="bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black px-4.5 py-2.5 rounded-xl shadow-sm transition-all cursor-pointer">Join Free</button>
+              <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-xl border border-theme text-theme-muted hover:text-primary hover:border-primary transition-all cursor-pointer"
+                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+              <button id="btn-public-signin" onClick={() => setShowAuthPage(true)} className="nav-link text-xs font-black cursor-pointer transition-all">Sign In</button>
+              <button id="btn-public-join" onClick={startOnboardingSequence} className="btn-cta text-[11px] font-black px-5 py-2.5 text-sm cursor-pointer">Join Free</button>
             </div>
           </div>
         </header>
       )}
 
-      <div id="core-frame-element" className="grow w-full bg-white">
+      <div id="core-frame-element" className="grow w-full bg-theme theme-transition">
         {!isAuthenticated ? (
           showAuthPage ? (
             <AuthPage onSuccess={() => {
@@ -391,11 +416,11 @@ export default function App() {
             onComplete={handleOnboardingComplete}
           />
         ) : (
-          <div id="app-workspace-container" className="flex h-screen bg-white overflow-hidden relative">
-            <SidebarNavigation activeTab={activeTab} setActiveTab={setActiveTab} user={user} onLogout={handleLogout} isOpen={isSidebarOpen} />
-            <main id="app-workspace-main" className="flex-1 flex flex-col min-w-0 overflow-hidden bg-white pb-16 lg:pb-0">
-              <HeaderNavigation activeTab={activeTab} user={user} isSidebarOpen={isSidebarOpen} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-              <div id="active-tab-render-viewport" className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6 bg-white">
+          <div id="app-workspace-container" className="flex h-screen bg-theme overflow-hidden relative theme-transition">
+            <SidebarNavigation activeTab={activeTab} setActiveTab={setActiveTab} user={user} onLogout={handleLogout} isOpen={isSidebarOpen} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
+            <main id="app-workspace-main" className="flex-1 flex flex-col min-w-0 overflow-hidden bg-theme pb-16 lg:pb-0 theme-transition">
+              <HeaderNavigation activeTab={activeTab} user={user} isSidebarOpen={isSidebarOpen} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
+              <div id="active-tab-render-viewport" className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6 bg-theme theme-transition">
                 {activeTab === 'dashboard' && <Dashboard user={user} workoutPlans={workoutPlans} selectedDayIndex={selectedDayIndex} weightHistory={weightHistory} />}
                 {activeTab === 'workout' && <Workouts workoutPlans={workoutPlans} selectedPlanId={selectedPlanId} setSelectedPlanId={setSelectedPlanId} selectedDayIndex={selectedDayIndex} setSelectedDayIndex={setSelectedDayIndex} onCompleteExercise={handleExerciseCompleted} />}
                 {activeTab === 'nutrition' && <Nutrition dietPlans={dietPlans} />}
@@ -413,7 +438,7 @@ export default function App() {
         )}
       </div>
 
-      <footer id="app-static-footer" className="py-4 text-center text-[9px] font-mono text-slate-400 bg-white border-t border-slate-100 select-none">
+      <footer id="app-static-footer" className="py-4 text-center text-[9px] font-mono text-theme-dim bg-theme border-t border-theme select-none theme-transition">
         © 2026 FitSphere AI Ecosystem • Built securely utilizing deep neural biomechanical models
       </footer>
     </div>

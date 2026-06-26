@@ -1,6 +1,7 @@
 import { User } from '../types';
 import { Settings as SettingsIcon, Bell, User as UserIcon, RefreshCw, Scale, Heart, AlertCircle, Camera, Eye, Plus, Trash2, ChevronDown, ChevronRight, Award, Briefcase, Calendar, Link as LinkIcon, Globe, ExternalLink } from 'lucide-react';
 import { useState, ChangeEvent } from 'react';
+import { Sun, Moon } from 'lucide-react';
 
 interface SettingsProps {
   user: User;
@@ -92,13 +93,13 @@ export function Settings({
   };
 
   return (
-    <div className="max-w-4xl bg-white p-2 space-y-6 text-left">
+    <div className="max-w-4xl bg-theme p-2 space-y-6 text-left">
       <div>
-        <h1 className="text-xl md:text-2xl font-black text-[#191A23] tracking-tight flex items-center gap-2">
-          <SettingsIcon className="w-6 h-6 text-[#191A23]" />
+        <h1 className="text-xl md:text-2xl font-black text-theme tracking-tight flex items-center gap-2">
+          <SettingsIcon className="w-6 h-6 text-theme" />
           Settings Panel
         </h1>
-        <p className="text-xs text-slate-500 mt-1 font-semibold">
+        <p className="text-xs text-theme-muted mt-1 font-semibold">
           Manage your coaching business profile, credentials, services, and account.
         </p>
       </div>
@@ -107,14 +108,14 @@ export function Settings({
         {/* Left Column */}
         <div className="space-y-6">
           {/* Profile Card */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-5 shadow-[4px_4px_0px_#191A23] space-y-4">
+          <div className="bg-card border-2 border-theme rounded-[24px] p-5 shadow-brutal space-y-4">
             <div className="flex items-center gap-3 relative">
               <div className="relative isolate group shrink-0">
                 <img
                   src={user.photoUrl}
                   alt={user.name}
                   referrerPolicy="no-referrer"
-                  className="w-14 h-14 rounded-2xl object-cover border-2 border-[#191A23]"
+                  className="w-14 h-14 rounded-2xl object-cover border-2 border-theme"
                 />
                 <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={isUploadingPhoto} />
@@ -126,36 +127,36 @@ export function Settings({
                 </label>
               </div>
               <div className="min-w-0 font-black">
-                <span className="text-[10px] font-mono bg-[#B9FF66] border border-[#191A23] text-[#191A23] px-1.5 py-0.5 rounded shadow-[1px_1px_0px_#191A23] uppercase tracking-widest inline-block">PROFESSIONAL PROFILE</span>
-                <span className="font-extrabold text-[#191A23] text-sm truncate block leading-tight mt-1">{user.name}</span>
-                <span className="text-[9px] text-[#191A23] block font-semibold truncate mt-0.5">{user.email}</span>
+                <span className="text-[10px] font-mono bg-primary border border-theme text-theme px-1.5 py-0.5 rounded shadow-[1px_1px_0px_#191A23] uppercase tracking-widest inline-block">PROFESSIONAL PROFILE</span>
+                <span className="font-extrabold text-theme text-sm truncate block leading-tight mt-1">{user.name}</span>
+                <span className="text-[9px] text-theme block font-semibold truncate mt-0.5">{user.email}</span>
               </div>
             </div>
 
             {/* Collapsible Internal Metrics */}
-            <div className="border-t-2 border-[#191A23]/10 pt-3">
+            <div className="border-t-2 border-theme/10 pt-3">
               <button
                 onClick={() => setShowInternalStats(!showInternalStats)}
-                className="w-full flex items-center justify-between text-xs font-black text-slate-500 cursor-pointer hover:text-[#191A23] transition-colors"
+                className="w-full flex items-center justify-between text-xs font-black text-theme-muted cursor-pointer hover:text-theme transition-colors"
               >
                 <span>Internal Coach Metrics</span>
                 {showInternalStats ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
               </button>
               {showInternalStats && (
                 <div className="mt-2 space-y-2 font-black">
-                  <div className="flex justify-between text-xs text-slate-500">
+                  <div className="flex justify-between text-xs text-theme-muted">
                     <span>Experience Level</span>
-                    <span className="text-[#191A23]">Level {user.level}</span>
+                    <span className="text-theme">Level {user.level}</span>
                   </div>
-                  <div className="flex justify-between text-xs text-slate-500">
+                  <div className="flex justify-between text-xs text-theme-muted">
                     <span>XP Progress</span>
-                    <span className="text-[#191A23]">{user.xp} / {user.targetXp}</span>
+                    <span className="text-theme">{user.xp} / {user.targetXp}</span>
                   </div>
-                  <div className="flex justify-between text-xs text-slate-500">
+                  <div className="flex justify-between text-xs text-theme-muted">
                     <span>Client Streak</span>
-                    <span className="text-[#191A23]">{user.streak} Days</span>
+                    <span className="text-theme">{user.streak} Days</span>
                   </div>
-                  <div className="flex justify-between text-xs text-slate-500">
+                  <div className="flex justify-between text-xs text-theme-muted">
                     <span>Reward Points</span>
                     <span className="text-amber-500">{user.points} PTS</span>
                   </div>
@@ -166,7 +167,7 @@ export function Settings({
             <button
               onClick={() => onNotify('Public coach profile preview coming soon!')}
               id="btn-settings-preview-profile"
-              className="w-full py-2 px-3 bg-[#B9FF66] border-2 border-[#191A23] text-[10px] font-black text-[#191A23] rounded-xl transition-all shadow-[2px_2px_0px_#191A23] active:translate-y-0.5 active:shadow-none font-mono tracking-wider uppercase cursor-pointer text-center flex items-center justify-center gap-1.5"
+              className="w-full py-2 px-3 bg-primary border-2 border-theme text-[10px] font-black text-theme rounded-xl transition-all shadow-[2px_2px_0px_#191A23] active:translate-y-0.5 active:shadow-none font-mono tracking-wider uppercase cursor-pointer text-center flex items-center justify-center gap-1.5"
             >
               <Eye className="w-3.5 h-3.5" />
               Preview Public Coach Profile
@@ -174,38 +175,38 @@ export function Settings({
           </div>
 
           {/* Quick Credentials Summary */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-5 shadow-[4px_4px_0px_#191A23] space-y-3">
-            <h3 className="font-extrabold text-[#191A23] text-xs flex items-center gap-2 uppercase font-mono tracking-wider">
-              <Award className="w-4 h-4 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-5 shadow-[4px_4px_0px_#191A23] space-y-3">
+            <h3 className="font-extrabold text-theme text-xs flex items-center gap-2 uppercase font-mono tracking-wider">
+              <Award className="w-4 h-4 text-theme" />
               Credentials at a Glance
             </h3>
             {user.certifications ? (
-              <div className="text-[10px] font-semibold text-slate-600 leading-relaxed">
-                <span className="font-black text-[#191A23] block text-[9px] uppercase tracking-wider mb-0.5">Certifications</span>
+              <div className="text-[10px] font-semibold text-theme-muted leading-relaxed">
+                <span className="font-black text-theme block text-[9px] uppercase tracking-wider mb-0.5">Certifications</span>
                 {user.certifications}
               </div>
             ) : (
-              <p className="text-[10px] text-slate-400 font-semibold italic">No certifications listed yet.</p>
+              <p className="text-[10px] text-theme-dim font-semibold italic">No certifications listed yet.</p>
             )}
             {user.specializations && (
-              <div className="text-[10px] font-semibold text-slate-600 leading-relaxed">
-                <span className="font-black text-[#191A23] block text-[9px] uppercase tracking-wider mb-0.5">Specializations</span>
+              <div className="text-[10px] font-semibold text-theme-muted leading-relaxed">
+                <span className="font-black text-theme block text-[9px] uppercase tracking-wider mb-0.5">Specializations</span>
                 {user.specializations}
               </div>
             )}
             {user.yearsOfExperience ? (
-              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-600">
-                <Briefcase className="w-3 h-3 text-[#191A23]" />
-                <span className="font-black text-[#191A23]">{user.yearsOfExperience} years of experience</span>
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-theme-muted">
+                <Briefcase className="w-3 h-3 text-theme" />
+                <span className="font-black text-theme">{user.yearsOfExperience} years of experience</span>
               </div>
             ) : null}
           </div>
 
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-5 shadow-[4px_4px_0px_#191A23]">
-            <div className="flex items-start gap-2 text-[#191A23] bg-[#B9FF66]/20 border border-[#191A23] p-3 rounded-2xl">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-5 shadow-[4px_4px_0px_#191A23]">
+            <div className="flex items-start gap-2 text-theme bg-primary/20 border border-theme p-3 rounded-2xl">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-theme" />
               <div className="text-[11px] leading-relaxed font-black">
-                <b className="font-black block text-[#191A23] mb-0.5">Commercial Ready Environment</b>
+                <b className="font-black block text-theme mb-0.5">Commercial Ready Environment</b>
                 Strictly white background parameters, local offline persistence models, and responsive mobile alignments activated.
               </div>
             </div>
@@ -216,26 +217,26 @@ export function Settings({
         <div className="md:col-span-2 space-y-6">
 
           {/* Section 1: Coach Credentials & Expertise */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
-            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
-              <Award className="w-4 h-4 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <h3 className="font-extrabold text-theme text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <Award className="w-4 h-4 text-theme" />
               Coach Credentials & Expertise
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">CERTIFICATIONS</label>
+                <label className="text-[9px] font-black text-theme-muted tracking-wider uppercase block mb-1">CERTIFICATIONS</label>
                 <input
                   type="text"
                   value={user.certifications || ''}
                   id="input-settings-certifications"
                   onChange={(e) => updateField('certifications', e.target.value)}
                   placeholder="e.g. NSCA-CSCS, ACE Certified"
-                  className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                  className="w-full p-3 rounded-xl border-2 border-theme outline-none text-xs font-black bg-theme-secondary focus:bg-primary/10 placeholder:text-theme-dim"
                 />
               </div>
               <div>
-                <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">YEARS OF EXPERIENCE</label>
+                <label className="text-[9px] font-black text-theme-muted tracking-wider uppercase block mb-1">YEARS OF EXPERIENCE</label>
                 <input
                   type="number"
                   value={user.yearsOfExperience || 0}
@@ -243,47 +244,47 @@ export function Settings({
                   onChange={(e) => updateField('yearsOfExperience', parseInt(e.target.value) || 0)}
                   min={0}
                   max={100}
-                  className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10"
+                  className="w-full p-3 rounded-xl border-2 border-theme outline-none text-xs font-black bg-theme-secondary focus:bg-primary/10"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">SPECIALIZATIONS</label>
+              <label className="text-[9px] font-black text-theme-muted tracking-wider uppercase block mb-1">SPECIALIZATIONS</label>
               <input
                 type="text"
                 value={user.specializations || ''}
                 id="input-settings-specializations"
                 onChange={(e) => updateField('specializations', e.target.value)}
                 placeholder="e.g. Strength & Conditioning, Nutrition Coaching"
-                className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                className="w-full p-3 rounded-xl border-2 border-theme outline-none text-xs font-black bg-theme-secondary focus:bg-primary/10 placeholder:text-theme-dim"
               />
             </div>
 
             <div>
-              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">BIO / ABOUT ME</label>
+              <label className="text-[9px] font-black text-theme-muted tracking-wider uppercase block mb-1">BIO / ABOUT ME</label>
               <textarea
                 value={user.bio || ''}
                 id="input-settings-bio"
                 onChange={(e) => updateField('bio', e.target.value)}
                 placeholder="Tell potential clients about your coaching philosophy and approach..."
                 rows={3}
-                className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300 resize-none"
+                className="w-full p-3 rounded-xl border-2 border-theme outline-none text-xs font-black bg-theme-secondary focus:bg-primary/10 placeholder:text-theme-dim resize-none"
               />
             </div>
           </div>
 
           {/* Section 2: Notification Settings */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
-            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
-              <Bell className="w-4 h-4 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <h3 className="font-extrabold text-theme text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <Bell className="w-4 h-4 text-theme" />
               Notification Settings
             </h3>
 
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-black text-xs text-[#191A23] block">New client inquiry alerts</span>
-                <span className="text-[9px] text-slate-500 font-bold leading-normal block max-w-sm">
+                <span className="font-black text-xs text-theme block">New client inquiry alerts</span>
+                <span className="text-[9px] text-theme-muted font-bold leading-normal block max-w-sm">
                   Receive instant notifications when a potential client submits an inquiry or requests a consultation.
                 </span>
               </div>
@@ -292,14 +293,14 @@ export function Settings({
                 checked={notificationsEnabled}
                 id="checkbox-settings-client-inquiries"
                 onChange={(e) => setNotificationsEnabled(e.target.checked)}
-                className="w-5 h-5 text-[#191A23] accent-[#B9FF66] border-2 border-[#191A23] checked:bg-[#B9FF66] rounded cursor-pointer"
+                className="w-5 h-5 text-theme accent-primary border-2 border-theme checked:bg-primary rounded cursor-pointer"
               />
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-black text-xs text-[#191A23] block">Booking & session reminders</span>
-                <span className="text-[9px] text-slate-500 font-bold leading-normal block max-w-sm">
+                <span className="font-black text-xs text-theme block">Booking & session reminders</span>
+                <span className="text-[9px] text-theme-muted font-bold leading-normal block max-w-sm">
                   Get reminded about upcoming coaching sessions, consultations, and scheduled check-ins.
                 </span>
               </div>
@@ -308,14 +309,14 @@ export function Settings({
                 checked={notificationsEnabled}
                 id="checkbox-settings-booking-reminders"
                 onChange={(e) => setNotificationsEnabled(e.target.checked)}
-                className="w-5 h-5 text-[#191A23] accent-[#B9FF66] border-2 border-[#191A23] checked:bg-[#B9FF66] rounded cursor-pointer"
+                className="w-5 h-5 text-theme accent-primary border-2 border-theme checked:bg-primary rounded cursor-pointer"
               />
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-black text-xs text-[#191A23] block">Client progress updates</span>
-                <span className="text-[9px] text-slate-500 font-bold leading-normal block max-w-sm">
+                <span className="font-black text-xs text-theme block">Client progress updates</span>
+                <span className="text-[9px] text-theme-muted font-bold leading-normal block max-w-sm">
                   Receive summaries when your clients log new workouts, measurements, or hit milestones.
                 </span>
               </div>
@@ -324,47 +325,47 @@ export function Settings({
                 checked={notificationsEnabled}
                 id="checkbox-settings-client-progress"
                 onChange={(e) => setNotificationsEnabled(e.target.checked)}
-                className="w-5 h-5 text-[#191A23] accent-[#B9FF66] border-2 border-[#191A23] checked:bg-[#B9FF66] rounded cursor-pointer"
+                className="w-5 h-5 text-theme accent-primary border-2 border-theme checked:bg-primary rounded cursor-pointer"
               />
             </div>
           </div>
 
           {/* Section 3: Client Onboarding Templates */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
-            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
-              <RefreshCw className="w-4 h-4 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <h3 className="font-extrabold text-theme text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <RefreshCw className="w-4 h-4 text-theme" />
               Client Onboarding Templates
             </h3>
 
-            <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+            <p className="text-xs text-theme-muted font-semibold leading-relaxed">
               Send a structured onboarding flow to new clients. Choose a template below to get them started.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
                 onClick={() => onNotify('Introductory Consultation template sent!')}
-                className="p-4 rounded-2xl border-2 border-[#191A23] bg-white hover:bg-[#B9FF66]/10 transition-all text-left cursor-pointer group"
+                className="p-4 rounded-2xl border-2 border-theme bg-card hover:bg-primary/10 transition-all text-left cursor-pointer group"
               >
-                <span className="font-black text-xs text-[#191A23] block">Intro Consultation</span>
-                <span className="text-[9px] text-slate-500 font-semibold block mt-1 leading-relaxed">
+                <span className="font-black text-xs text-theme block">Intro Consultation</span>
+                <span className="text-[9px] text-theme-muted font-semibold block mt-1 leading-relaxed">
                   Collect client goals, medical history, and availability.
                 </span>
               </button>
               <button
                 onClick={() => onNotify('Fitness Assessment template sent!')}
-                className="p-4 rounded-2xl border-2 border-[#191A23] bg-white hover:bg-[#B9FF66]/10 transition-all text-left cursor-pointer group"
+                className="p-4 rounded-2xl border-2 border-theme bg-card hover:bg-primary/10 transition-all text-left cursor-pointer group"
               >
-                <span className="font-black text-xs text-[#191A23] block">Fitness Assessment</span>
-                <span className="text-[9px] text-slate-500 font-semibold block mt-1 leading-relaxed">
+                <span className="font-black text-xs text-theme block">Fitness Assessment</span>
+                <span className="text-[9px] text-theme-muted font-semibold block mt-1 leading-relaxed">
                   Baseline measurements, movement screening, and goals.
                 </span>
               </button>
               <button
                 onClick={() => onNotify('Nutrition Setup template sent!')}
-                className="p-4 rounded-2xl border-2 border-[#191A23] bg-white hover:bg-[#B9FF66]/10 transition-all text-left cursor-pointer group"
+                className="p-4 rounded-2xl border-2 border-theme bg-card hover:bg-primary/10 transition-all text-left cursor-pointer group"
               >
-                <span className="font-black text-xs text-[#191A23] block">Nutrition Setup</span>
-                <span className="text-[9px] text-slate-500 font-semibold block mt-1 leading-relaxed">
+                <span className="font-black text-xs text-theme block">Nutrition Setup</span>
+                <span className="text-[9px] text-theme-muted font-semibold block mt-1 leading-relaxed">
                   Dietary preferences, restrictions, and meal planning.
                 </span>
               </button>
@@ -374,7 +375,7 @@ export function Settings({
               <button
                 onClick={onRetriggerOnboarding}
                 id="btn-settings-onboarding-restart"
-                className="inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-white text-[#191A23] border-2 border-[#191A23] text-xs font-black rounded-xl shadow-[3px_3px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none cursor-pointer transition-all"
+                className="inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-card text-theme border-2 border-theme text-xs font-black rounded-xl shadow-[3px_3px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none cursor-pointer transition-all"
               >
                 <RefreshCw className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Customize Onboarding Flow</span>
@@ -383,68 +384,68 @@ export function Settings({
           </div>
 
           {/* Section 4: Services & Availability */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
-            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
-              <Calendar className="w-4 h-4 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <h3 className="font-extrabold text-theme text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <Calendar className="w-4 h-4 text-theme" />
               Services & Availability
             </h3>
 
             <div>
-              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">SERVICES OFFERED</label>
+              <label className="text-[9px] font-black text-theme-muted tracking-wider uppercase block mb-1">SERVICES OFFERED</label>
               <textarea
                 value={user.services || ''}
                 id="input-settings-services"
                 onChange={(e) => updateField('services', e.target.value)}
                 placeholder="e.g. 1-on-1 Coaching, Group Sessions, Nutrition Planning, Program Design"
                 rows={2}
-                className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300 resize-none"
+                className="w-full p-3 rounded-xl border-2 border-theme outline-none text-xs font-black bg-theme-secondary focus:bg-primary/10 placeholder:text-theme-dim resize-none"
               />
             </div>
 
             <div>
-              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">AVAILABILITY HOURS</label>
+              <label className="text-[9px] font-black text-theme-muted tracking-wider uppercase block mb-1">AVAILABILITY HOURS</label>
               <input
                 type="text"
                 value={user.availability || ''}
                 id="input-settings-availability"
                 onChange={(e) => updateField('availability', e.target.value)}
                 placeholder="e.g. Mon-Fri 6AM-8PM, Sat 8AM-12PM"
-                className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                className="w-full p-3 rounded-xl border-2 border-theme outline-none text-xs font-black bg-theme-secondary focus:bg-primary/10 placeholder:text-theme-dim"
               />
             </div>
 
             <div>
-              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">BOOKING LINK</label>
+              <label className="text-[9px] font-black text-theme-muted tracking-wider uppercase block mb-1">BOOKING LINK</label>
               <div className="flex items-center gap-2">
-                <LinkIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                <LinkIcon className="w-4 h-4 text-theme-dim shrink-0" />
                 <input
                   type="url"
                   value={user.bookingLink || ''}
                   id="input-settings-booking-link"
                   onChange={(e) => updateField('bookingLink', e.target.value)}
                   placeholder="https://calendly.com/your-link"
-                  className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                  className="w-full p-3 rounded-xl border-2 border-theme outline-none text-xs font-black bg-theme-secondary focus:bg-primary/10 placeholder:text-theme-dim"
                 />
               </div>
             </div>
           </div>
 
           {/* Section 5: Portfolio & Social Links */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
-            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
-              <Globe className="w-4 h-4 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <h3 className="font-extrabold text-theme text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <Globe className="w-4 h-4 text-theme" />
               Portfolio & Social Links
             </h3>
 
             {/* Portfolio Links */}
             <div>
-              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-2">PORTFOLIO LINKS</label>
+              <label className="text-[9px] font-black text-theme-muted tracking-wider uppercase block mb-2">PORTFOLIO LINKS</label>
               <div className="space-y-2">
                 {portfolioLinks.map((link, i) => (
-                  <div key={i} className="flex items-center gap-2 p-2 rounded-xl border border-slate-200 bg-slate-50">
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="text-[10px] font-black text-[#191A23] min-w-[80px]">{link.platform}</span>
-                    <span className="text-[10px] text-slate-500 truncate flex-1">{link.url}</span>
+                  <div key={i} className="flex items-center gap-2 p-2 rounded-xl border border-theme bg-theme-secondary">
+                    <ExternalLink className="w-3.5 h-3.5 text-theme-dim shrink-0" />
+                    <span className="text-[10px] font-black text-theme min-w-[80px]">{link.platform}</span>
+                    <span className="text-[10px] text-theme-muted truncate flex-1">{link.url}</span>
                     <button onClick={() => removePortfolioLink(i)} className="p-1 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer">
                       <Trash2 className="w-3.5 h-3.5 text-rose-500" />
                     </button>
@@ -457,30 +458,30 @@ export function Settings({
                   value={newPortfolioPlatform}
                   onChange={(e) => setNewPortfolioPlatform(e.target.value)}
                   placeholder="Platform"
-                  className="w-[120px] p-2 rounded-xl border-2 border-[#191A23] outline-none text-[10px] font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                  className="w-[120px] p-2 rounded-xl border-2 border-theme outline-none text-[10px] font-black bg-theme-secondary focus:bg-primary/10 placeholder:text-theme-dim"
                 />
                 <input
                   type="url"
                   value={newPortfolioUrl}
                   onChange={(e) => setNewPortfolioUrl(e.target.value)}
                   placeholder="https://..."
-                  className="flex-1 p-2 rounded-xl border-2 border-[#191A23] outline-none text-[10px] font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                  className="flex-1 p-2 rounded-xl border-2 border-theme outline-none text-[10px] font-black bg-theme-secondary focus:bg-primary/10 placeholder:text-theme-dim"
                 />
-                <button onClick={addPortfolioLink} className="p-2 bg-[#B9FF66] border-2 border-[#191A23] rounded-xl hover:bg-[#a8e85c] transition-colors cursor-pointer shrink-0">
-                  <Plus className="w-3.5 h-3.5 text-[#191A23]" />
+                <button onClick={addPortfolioLink} className="p-2 bg-primary border-2 border-theme rounded-xl hover:bg-[#a8e85c] transition-colors cursor-pointer shrink-0">
+                  <Plus className="w-3.5 h-3.5 text-theme" />
                 </button>
               </div>
             </div>
 
             {/* Social Links */}
-            <div className="border-t-2 border-[#191A23]/10 pt-4">
-              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-2">SOCIAL LINKS</label>
+            <div className="border-t-2 border-theme/10 pt-4">
+              <label className="text-[9px] font-black text-theme-muted tracking-wider uppercase block mb-2">SOCIAL LINKS</label>
               <div className="space-y-2">
                 {socialLinks.map((link, i) => (
-                  <div key={i} className="flex items-center gap-2 p-2 rounded-xl border border-slate-200 bg-slate-50">
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="text-[10px] font-black text-[#191A23] min-w-[80px]">{link.platform}</span>
-                    <span className="text-[10px] text-slate-500 truncate flex-1">{link.url}</span>
+                  <div key={i} className="flex items-center gap-2 p-2 rounded-xl border border-theme bg-theme-secondary">
+                    <ExternalLink className="w-3.5 h-3.5 text-theme-dim shrink-0" />
+                    <span className="text-[10px] font-black text-theme min-w-[80px]">{link.platform}</span>
+                    <span className="text-[10px] text-theme-muted truncate flex-1">{link.url}</span>
                     <button onClick={() => removeSocialLink(i)} className="p-1 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer">
                       <Trash2 className="w-3.5 h-3.5 text-rose-500" />
                     </button>
@@ -493,97 +494,97 @@ export function Settings({
                   value={newSocialPlatform}
                   onChange={(e) => setNewSocialPlatform(e.target.value)}
                   placeholder="Platform"
-                  className="w-[120px] p-2 rounded-xl border-2 border-[#191A23] outline-none text-[10px] font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                  className="w-[120px] p-2 rounded-xl border-2 border-theme outline-none text-[10px] font-black bg-theme-secondary focus:bg-primary/10 placeholder:text-theme-dim"
                 />
                 <input
                   type="url"
                   value={newSocialUrl}
                   onChange={(e) => setNewSocialUrl(e.target.value)}
                   placeholder="https://..."
-                  className="flex-1 p-2 rounded-xl border-2 border-[#191A23] outline-none text-[10px] font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                  className="flex-1 p-2 rounded-xl border-2 border-theme outline-none text-[10px] font-black bg-theme-secondary focus:bg-primary/10 placeholder:text-theme-dim"
                 />
-                <button onClick={addSocialLink} className="p-2 bg-[#B9FF66] border-2 border-[#191A23] rounded-xl hover:bg-[#a8e85c] transition-colors cursor-pointer shrink-0">
-                  <Plus className="w-3.5 h-3.5 text-[#191A23]" />
+                <button onClick={addSocialLink} className="p-2 bg-primary border-2 border-theme rounded-xl hover:bg-[#a8e85c] transition-colors cursor-pointer shrink-0">
+                  <Plus className="w-3.5 h-3.5 text-theme" />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Section 6: Help & Feedback */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
-            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
-              <Heart className="w-4 h-4 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <h3 className="font-extrabold text-theme text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <Heart className="w-4 h-4 text-theme" />
               Help & Feedback
             </h3>
-            <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+            <p className="text-xs text-theme-muted font-semibold leading-relaxed">
               Have a suggestion, feature request, or need assistance? Our team is here to help you get the most out of FitSphere Pro. Reach out and we'll respond promptly.
             </p>
             <div className="pt-2">
-              <a href="mailto:kundansaduyashwanth@gmail.com" className="inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-white text-[#191A23] border-2 border-[#191A23] text-xs font-black rounded-xl shadow-[3px_3px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none cursor-pointer transition-all">
+              <a href="mailto:kundansaduyashwanth@gmail.com" className="inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-card text-theme border-2 border-theme text-xs font-black rounded-xl shadow-[3px_3px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none cursor-pointer transition-all">
                 Submit Feedback
               </a>
             </div>
           </div>
 
           {/* Section 7: Legal & Privacy */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
-            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
-              <Scale className="w-4 h-4 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <h3 className="font-extrabold text-theme text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <Scale className="w-4 h-4 text-theme" />
               Terms & Privacy Policies
             </h3>
             <div className="space-y-3">
-              <button onClick={() => setShowLegalContent('terms')} className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#191A23] transition-colors cursor-pointer group">
-                <span className="text-xs font-black text-[#191A23] group-hover:text-indigo-600 transition-colors">Terms and Conditions</span>
-                <span className="font-black text-[#191A23]">→</span>
+              <button onClick={() => setShowLegalContent('terms')} className="w-full flex items-center justify-between p-3 rounded-xl border border-theme hover:bg-theme-secondary transition-colors cursor-pointer group">
+                <span className="text-xs font-black text-theme group-hover:text-indigo-600 transition-colors">Terms and Conditions</span>
+                <span className="font-black text-theme">→</span>
               </button>
-              <button onClick={() => setShowLegalContent('privacy')} className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#191A23] transition-colors cursor-pointer group">
-                <span className="text-xs font-black text-[#191A23] group-hover:text-indigo-600 transition-colors">Privacy Policy</span>
-                <span className="font-black text-[#191A23]">→</span>
+              <button onClick={() => setShowLegalContent('privacy')} className="w-full flex items-center justify-between p-3 rounded-xl border border-theme hover:bg-theme-secondary transition-colors cursor-pointer group">
+                <span className="text-xs font-black text-theme group-hover:text-indigo-600 transition-colors">Privacy Policy</span>
+                <span className="font-black text-theme">→</span>
               </button>
             </div>
           </div>
 
           {/* Section 8: About FitSphere Pro */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
-             <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
-              <UserIcon className="w-4 h-4 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+             <h3 className="font-extrabold text-theme text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <UserIcon className="w-4 h-4 text-theme" />
               About FitSphere Pro
             </h3>
             <div className="space-y-3 text-xs">
               <div className="flex flex-col">
-                <span className="text-[9px] font-black text-slate-500 tracking-wider uppercase mb-0.5">DEVELOPER</span>
-                <span className="font-extrabold text-[#191A23] text-sm">KUNDAN SADHU YASWANTH</span>
+                <span className="text-[9px] font-black text-theme-muted tracking-wider uppercase mb-0.5">DEVELOPER</span>
+                <span className="font-extrabold text-theme text-sm">KUNDAN SADHU YASWANTH</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[9px] font-black text-slate-500 tracking-wider uppercase mb-0.5">CONTACT</span>
+                <span className="text-[9px] font-black text-theme-muted tracking-wider uppercase mb-0.5">CONTACT</span>
                 <a href="mailto:kundansaduyashwanth@gmail.com" className="font-extrabold text-indigo-600 hover:underline">kundansaduyashwanth@gmail.com</a>
               </div>
-              <p className="text-[10px] text-slate-500 font-semibold leading-relaxed pt-1 border-t border-slate-100">
+              <p className="text-[10px] text-theme-muted font-semibold leading-relaxed pt-1 border-t border-theme">
                 FitSphere Pro — AI-powered coaching platform for fitness professionals. Empowering trainers to manage clients, deliver programs, and grow their business.
               </p>
             </div>
           </div>
 
           {/* Section 9: Account Actions */}
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
-            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
-              <UserIcon className="w-4 h-4 text-[#191A23]" />
+          <div className="bg-card border-2 border-theme rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <h3 className="font-extrabold text-theme text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <UserIcon className="w-4 h-4 text-theme" />
               Account Management
             </h3>
 
             <div className="pt-2 space-y-4 flex flex-col">
               <button
                 onClick={onLogout}
-                className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#191A23] transition-colors cursor-pointer group"
+                className="w-full flex items-center justify-between p-3 rounded-xl border border-theme hover:bg-theme-secondary transition-colors cursor-pointer group"
               >
-                <span className="text-xs font-black text-[#191A23]">Sign Out</span>
-                <span className="font-black text-[#191A23]">→</span>
+                <span className="text-xs font-black text-theme">Sign Out</span>
+                <span className="font-black text-theme">→</span>
               </button>
             </div>
           </div>
 
           {/* Section 10: Danger Zone */}
-          <div className="bg-white border-2 border-rose-600 rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+          <div className="bg-card border-2 border-rose-600 rounded-[24px] p-6 shadow-brutal space-y-4">
             <button
               onClick={() => setDangerZoneOpen(!dangerZoneOpen)}
               className="w-full flex items-center justify-between cursor-pointer"
@@ -626,19 +627,19 @@ export function Settings({
       {/* Legal Content Modal */}
       {showLegalContent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#191A23]/50 p-4 backdrop-blur-sm">
-          <div className="bg-white border-2 border-[#191A23] rounded-[24px] shadow-[8px_8px_0px_#191A23] max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-slide-up">
-            <div className="p-5 border-b-2 border-[#191A23] bg-[#B9FF66]/20 flex justify-between items-center">
-              <h2 className="text-lg font-black text-[#191A23] uppercase tracking-wider font-mono">
+          <div className="bg-card border-2 border-theme rounded-[24px] shadow-brutal-xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-slide-up">
+            <div className="p-5 border-b-2 border-theme bg-primary/20 flex justify-between items-center">
+              <h2 className="text-lg font-black text-theme uppercase tracking-wider font-mono">
                 {showLegalContent === 'terms' ? 'Terms & Conditions' : 'Privacy Policy'}
               </h2>
               <button 
                 onClick={() => setShowLegalContent(null)}
                 className="p-1 hover:bg-[#191A23]/10 rounded-lg transition-colors cursor-pointer"
               >
-                <div className="w-6 h-6 flex items-center justify-center text-[#191A23] font-bold text-xl leading-none">×</div>
+                <div className="w-6 h-6 flex items-center justify-center text-theme font-bold text-xl leading-none">×</div>
               </button>
             </div>
-            <div className="p-6 overflow-y-auto font-medium text-sm text-[#191A23] space-y-4 leading-relaxed">
+            <div className="p-6 overflow-y-auto font-medium text-sm text-theme space-y-4 leading-relaxed">
               {showLegalContent === 'terms' && (
                 <>
                   <p className="font-black text-base">Welcome to FitSphere</p>
@@ -668,10 +669,10 @@ export function Settings({
                 </>
               )}
             </div>
-            <div className="p-5 border-t-2 border-[#191A23] bg-slate-50 flex justify-end">
+            <div className="p-5 border-t-2 border-theme bg-theme-secondary flex justify-end">
               <button 
                 onClick={() => setShowLegalContent(null)}
-                className="px-6 py-2.5 bg-[#191A23] text-white border-2 border-[#191A23] font-black rounded-xl shadow-[3px_3px_0px_#B9FF66] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none cursor-pointer transition-all uppercase tracking-wider text-xs"
+                className="px-6 py-2.5 bg-[#191A23] text-white border-2 border-theme font-black rounded-xl shadow-[3px_3px_0px_#B9FF66] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none cursor-pointer transition-all uppercase tracking-wider text-xs"
               >
                 Acknowledge & Close
               </button>
@@ -683,7 +684,7 @@ export function Settings({
       {/* Delete Account Confirmation Modal */}
       {showDeleteConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#191A23]/50 p-4 backdrop-blur-sm">
-          <div className="bg-white border-2 border-rose-600 rounded-[24px] shadow-[8px_8px_0px_#191A23] max-w-md w-full overflow-hidden animate-slide-up">
+          <div className="bg-card border-2 border-rose-600 rounded-[24px] shadow-brutal-xl max-w-md w-full overflow-hidden animate-slide-up">
             <div className="p-5 border-b-2 border-rose-600 bg-rose-50">
               <h2 className="text-lg font-black text-rose-700 uppercase tracking-wider font-mono flex items-center gap-2">
                 <AlertCircle className="w-5 h-5" />
@@ -691,11 +692,11 @@ export function Settings({
               </h2>
             </div>
             <div className="p-6 space-y-4">
-              <p className="text-xs font-semibold text-slate-600 leading-relaxed">
+              <p className="text-xs font-semibold text-theme-muted leading-relaxed">
                 This action cannot be undone. All your data, client information, and settings will be permanently deleted.
               </p>
               <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">
+                <label className="text-[10px] font-black text-theme-muted uppercase tracking-wider block mb-1">
                   Type your email <span className="text-rose-600">{user.email}</span> to confirm
                 </label>
                 <input
@@ -703,13 +704,13 @@ export function Settings({
                   value={deleteConfirmInput}
                   onChange={(e) => setDeleteConfirmInput(e.target.value)}
                   placeholder={user.email}
-                  className="w-full p-3 rounded-xl border-2 border-rose-600 outline-none text-xs font-black bg-white focus:bg-rose-50 placeholder:text-slate-300"
+                  className="w-full p-3 rounded-xl border-2 border-rose-600 outline-none text-xs font-black bg-theme-secondary focus:bg-rose-50 placeholder:text-theme-dim"
                 />
               </div>
               <div className="flex items-center gap-3 pt-2">
                 <button
                   onClick={() => { setShowDeleteConfirmModal(false); setDeleteConfirmInput(''); }}
-                  className="flex-1 py-2.5 px-4 bg-white border-2 border-[#191A23] text-xs font-black rounded-xl shadow-[2px_2px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all cursor-pointer"
+                  className="flex-1 py-2.5 px-4 bg-card border-2 border-theme text-xs font-black rounded-xl shadow-brutal-sm hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
