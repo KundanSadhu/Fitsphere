@@ -15,8 +15,8 @@ export function MobileMoreOverlay({ isOpen, onClose, activeTab, setActiveTab, on
 
   const moreItems = [
     { id: 'meditation', icon: Medal, label: 'Meditation Zone' },
-    { id: 'competitions', icon: Trophy, label: 'Competitions' },
-    { id: 'shop', icon: ShoppingBag, label: 'Athletic Gear Store' },
+    { id: 'competitions', icon: Trophy, label: 'Client Challenges' },
+    { id: 'shop', icon: ShoppingBag, label: 'Recommended Products' },
     { id: 'settings', icon: Settings, label: 'Settings' }
   ];
 

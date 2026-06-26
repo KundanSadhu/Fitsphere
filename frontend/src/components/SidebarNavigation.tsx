@@ -20,8 +20,8 @@ export function SidebarNavigation({ activeTab, setActiveTab, user, onLogout, isO
     { id: 'nutrition', icon: Apple, label: 'Nutrition & Meals' },
     { id: 'progress', icon: TrendingUp, label: 'Progress Matrix' },
     { id: 'meditation', icon: Medal, label: 'Meditation Zone' },
-    { id: 'competitions', icon: Trophy, label: 'Competitions' },
-    { id: 'shop', icon: SupplementsShop, label: 'Supplements Shop' },
+    { id: 'competitions', icon: Trophy, label: 'Client Challenges' },
+    { id: 'shop', icon: SupplementsShop, label: 'Recommended Products' },
     { id: 'settings', icon: Settings, label: 'Settings' }
   ];
 
@@ -95,12 +95,12 @@ export function SidebarNavigation({ activeTab, setActiveTab, user, onLogout, isO
                 <Bot className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <p className={`text-[11px] font-black ${activeTab === 'ai-coach' ? 'text-white' : 'text-[#191A23]'}`}>AI Coach Chamber</p>
-                <span className={`text-[8.5px] font-mono px-1 rounded-sm ${activeTab === 'ai-coach' ? 'bg-[#B9FF66]/20 text-[#B9FF66]' : 'bg-[#191A23] text-[#B9FF66]'}`}>🤖 ACTIVE ONLINE</span>
+                 <p className={`text-[11px] font-black ${activeTab === 'ai-coach' ? 'text-white' : 'text-[#191A23]'}`}>Client Management Dashboard</p>
+                 <span className={`text-[8.5px] font-mono px-1 rounded-sm ${activeTab === 'ai-coach' ? 'bg-[#B9FF66]/20 text-[#B9FF66]' : 'bg-[#191A23] text-[#B9FF66]'}`}>🤖 ACTIVE ONLINE</span>
               </div>
             </div>
             <p className={`text-[10px] font-semibold leading-relaxed ${activeTab === 'ai-coach' ? 'text-slate-300' : 'text-slate-600'}`}>
-              Gain diagnostic info on fibers, progressive loads & rest.
+               Manage client profiles, track progress & communicate.
             </p>
           </button>
         </div>

@@ -10,6 +10,15 @@ export interface User {
   xp: number;
   targetXp: number;
   onboardingCompleted: boolean;
+  certifications?: string;
+  specializations?: string;
+  yearsOfExperience?: number;
+  bio?: string;
+  services?: string;
+  availability?: string;
+  bookingLink?: string;
+  portfolioLinks?: { platform: string; url: string }[];
+  socialLinks?: { platform: string; url: string }[];
   appState?: {
     weightHistory: WeightRecord[];
     progressPhotos: string[];

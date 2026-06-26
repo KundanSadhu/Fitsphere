@@ -4,14 +4,29 @@ export const INITIAL_USER: User = {
   id: 'user_01',
   name: 'Kundan Saduyashwanth',
   email: 'kundansaduyashwanth@gmail.com',
-  role: 'client',
+  role: 'trainer',
   photoUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop',
   streak: 5,
   level: 4,
   points: 450,
   xp: 1250,
   targetXp: 3000,
-  onboardingCompleted: true
+  onboardingCompleted: true,
+  certifications: 'NSCA-CSCS, ACE Certified Personal Trainer',
+  specializations: 'Strength & Conditioning, Hypertrophy Programming, Nutrition Coaching',
+  yearsOfExperience: 8,
+  bio: 'Dedicated coach helping clients transform through evidence-based training and nutrition protocols.',
+  services: '1-on-1 Coaching, Group Sessions, Nutrition Planning, Program Design',
+  availability: 'Mon-Fri 6AM-8PM, Sat 8AM-12PM',
+  bookingLink: '',
+  portfolioLinks: [
+    { platform: 'Website', url: 'https://fitsphere.app/coach/kundan' },
+    { platform: 'YouTube', url: 'https://youtube.com/@kundansadhu' }
+  ],
+  socialLinks: [
+    { platform: 'Instagram', url: 'https://instagram.com/kundansadhu' },
+    { platform: 'LinkedIn', url: 'https://linkedin.com/in/kundansadhu' }
+  ]
 };
 
 export const WORKOUT_PLANS: WorkoutPlan[] = [

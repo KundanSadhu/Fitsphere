@@ -1,7 +1,6 @@
 import { User } from '../types';
-import { Settings as SettingsIcon, Bell, User as UserIcon, RefreshCw, Scale, Heart, AlertCircle, Camera } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, User as UserIcon, RefreshCw, Scale, Heart, AlertCircle, Camera, Eye, Plus, Trash2, ChevronDown, ChevronRight, Award, Briefcase, Calendar, Link as LinkIcon, Globe, ExternalLink } from 'lucide-react';
 import { useState, ChangeEvent } from 'react';
-
 
 interface SettingsProps {
   user: User;
@@ -25,47 +24,70 @@ export function Settings({
   onDeleteAccount
 }: SettingsProps) {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-
   const [showLegalContent, setShowLegalContent] = useState<'terms' | 'privacy' | null>(null);
+  const [showInternalStats, setShowInternalStats] = useState(false);
+  const [dangerZoneOpen, setDangerZoneOpen] = useState(false);
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
-  const handleLevelUpManualSim = () => {
-    const nextXp = user.xp + 250;
-    let nextLevel = user.level;
-    let nextTargetXp = user.targetXp;
-    
-    if (nextXp >= user.targetXp) {
-      nextLevel += 1;
-      nextTargetXp = Math.floor(user.targetXp * 1.5);
-      onNotify(`🎉 LEVEL UP! Welcome to FitSphere Level ${nextLevel}!`);
-    } else {
-      onNotify('Simulated +250 XP reward added!');
-    }
+  const [newPortfolioPlatform, setNewPortfolioPlatform] = useState('');
+  const [newPortfolioUrl, setNewPortfolioUrl] = useState('');
+  const [newSocialPlatform, setNewSocialPlatform] = useState('');
+  const [newSocialUrl, setNewSocialUrl] = useState('');
 
-    saveUserAndSync({
-      ...user,
-      xp: nextXp,
-      level: nextLevel,
-      targetXp: nextTargetXp
-    });
-  };
+  const portfolioLinks = user.portfolioLinks || [];
+  const socialLinks = user.socialLinks || [];
 
   const handlePhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     try {
       setIsUploadingPhoto(true);
       const url = URL.createObjectURL(file);
-      saveUserAndSync({
-        ...user,
-        photoUrl: url
-      });
+      saveUserAndSync({ ...user, photoUrl: url });
       onNotify('Profile picture updated successfully!');
     } catch (err) {
       console.error('Photo upload failed:', err);
       onNotify('Failed to upload profile picture.');
     } finally {
       setIsUploadingPhoto(false);
+    }
+  };
+
+  const updateField = (field: string, value: any) => {
+    saveUserAndSync({ ...user, [field]: value });
+  };
+
+  const addPortfolioLink = () => {
+    if (!newPortfolioPlatform.trim() || !newPortfolioUrl.trim()) return;
+    updateField('portfolioLinks', [...portfolioLinks, { platform: newPortfolioPlatform.trim(), url: newPortfolioUrl.trim() }]);
+    setNewPortfolioPlatform('');
+    setNewPortfolioUrl('');
+    onNotify('Portfolio link added!');
+  };
+
+  const removePortfolioLink = (index: number) => {
+    updateField('portfolioLinks', portfolioLinks.filter((_, i) => i !== index));
+  };
+
+  const addSocialLink = () => {
+    if (!newSocialPlatform.trim() || !newSocialUrl.trim()) return;
+    updateField('socialLinks', [...socialLinks, { platform: newSocialPlatform.trim(), url: newSocialUrl.trim() }]);
+    setNewSocialPlatform('');
+    setNewSocialUrl('');
+    onNotify('Social link added!');
+  };
+
+  const removeSocialLink = (index: number) => {
+    updateField('socialLinks', socialLinks.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteConfirmed = () => {
+    if (deleteConfirmInput === user.email) {
+      onDeleteAccount();
+      setShowDeleteConfirmModal(false);
+    } else {
+      onNotify('Email does not match. Account not deleted.');
     }
   };
 
@@ -77,21 +99,22 @@ export function Settings({
           Settings Panel
         </h1>
         <p className="text-xs text-slate-500 mt-1 font-semibold">
-          Access personal credentials, notification channels, biometric resets, and physical target optimizations.
+          Manage your coaching business profile, credentials, services, and account.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Left Column Settings Tabs & Details Summary */}
+        {/* Left Column */}
         <div className="space-y-6">
+          {/* Profile Card */}
           <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-5 shadow-[4px_4px_0px_#191A23] space-y-4">
             <div className="flex items-center gap-3 relative">
-              <div className="relative isolate group">
+              <div className="relative isolate group shrink-0">
                 <img
                   src={user.photoUrl}
                   alt={user.name}
                   referrerPolicy="no-referrer"
-                  className="w-12 h-12 rounded-2xl object-cover border-2 border-[#191A23]"
+                  className="w-14 h-14 rounded-2xl object-cover border-2 border-[#191A23]"
                 />
                 <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={isUploadingPhoto} />
@@ -103,30 +126,79 @@ export function Settings({
                 </label>
               </div>
               <div className="min-w-0 font-black">
-                <span className="text-[10px] font-mono bg-[#B9FF66] border border-[#191A23] text-[#191A23] px-1.5 py-0.5 rounded shadow-[1px_1px_0px_#191A23] uppercase tracking-widest inline-block">LEVEL {user.level}</span>
+                <span className="text-[10px] font-mono bg-[#B9FF66] border border-[#191A23] text-[#191A23] px-1.5 py-0.5 rounded shadow-[1px_1px_0px_#191A23] uppercase tracking-widest inline-block">PROFESSIONAL PROFILE</span>
                 <span className="font-extrabold text-[#191A23] text-sm truncate block leading-tight mt-1">{user.name}</span>
                 <span className="text-[9px] text-[#191A23] block font-semibold truncate mt-0.5">{user.email}</span>
               </div>
             </div>
 
-            <div className="border-t-2 border-[#191A23]/10 pt-3 space-y-2 font-black">
-              <div className="flex justify-between text-xs text-slate-500">
-                <span>Streak loyalty count</span>
-                <span className="text-[#191A23]">{user.streak} Days</span>
-              </div>
-              <div className="flex justify-between text-xs text-slate-500">
-                <span>Reward Points balance</span>
-                <span className="text-amber-500">{user.points} PTS</span>
-              </div>
+            {/* Collapsible Internal Metrics */}
+            <div className="border-t-2 border-[#191A23]/10 pt-3">
+              <button
+                onClick={() => setShowInternalStats(!showInternalStats)}
+                className="w-full flex items-center justify-between text-xs font-black text-slate-500 cursor-pointer hover:text-[#191A23] transition-colors"
+              >
+                <span>Internal Coach Metrics</span>
+                {showInternalStats ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+              </button>
+              {showInternalStats && (
+                <div className="mt-2 space-y-2 font-black">
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>Experience Level</span>
+                    <span className="text-[#191A23]">Level {user.level}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>XP Progress</span>
+                    <span className="text-[#191A23]">{user.xp} / {user.targetXp}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>Client Streak</span>
+                    <span className="text-[#191A23]">{user.streak} Days</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>Reward Points</span>
+                    <span className="text-amber-500">{user.points} PTS</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
-              onClick={handleLevelUpManualSim}
-              id="btn-settings-sim-xp"
-              className="w-full py-2 px-3 bg-[#B9FF66] border-2 border-[#191A23] text-[10px] font-black text-[#191A23] rounded-xl transition-all shadow-[2px_2px_0px_#191A23] active:translate-y-0.5 active:shadow-none font-mono tracking-wider uppercase cursor-pointer text-center"
+              onClick={() => onNotify('Public coach profile preview coming soon!')}
+              id="btn-settings-preview-profile"
+              className="w-full py-2 px-3 bg-[#B9FF66] border-2 border-[#191A23] text-[10px] font-black text-[#191A23] rounded-xl transition-all shadow-[2px_2px_0px_#191A23] active:translate-y-0.5 active:shadow-none font-mono tracking-wider uppercase cursor-pointer text-center flex items-center justify-center gap-1.5"
             >
-              Simulate Progress +250 XP
+              <Eye className="w-3.5 h-3.5" />
+              Preview Public Coach Profile
             </button>
+          </div>
+
+          {/* Quick Credentials Summary */}
+          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-5 shadow-[4px_4px_0px_#191A23] space-y-3">
+            <h3 className="font-extrabold text-[#191A23] text-xs flex items-center gap-2 uppercase font-mono tracking-wider">
+              <Award className="w-4 h-4 text-[#191A23]" />
+              Credentials at a Glance
+            </h3>
+            {user.certifications ? (
+              <div className="text-[10px] font-semibold text-slate-600 leading-relaxed">
+                <span className="font-black text-[#191A23] block text-[9px] uppercase tracking-wider mb-0.5">Certifications</span>
+                {user.certifications}
+              </div>
+            ) : (
+              <p className="text-[10px] text-slate-400 font-semibold italic">No certifications listed yet.</p>
+            )}
+            {user.specializations && (
+              <div className="text-[10px] font-semibold text-slate-600 leading-relaxed">
+                <span className="font-black text-[#191A23] block text-[9px] uppercase tracking-wider mb-0.5">Specializations</span>
+                {user.specializations}
+              </div>
+            )}
+            {user.yearsOfExperience ? (
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-600">
+                <Briefcase className="w-3 h-3 text-[#191A23]" />
+                <span className="font-black text-[#191A23]">{user.yearsOfExperience} years of experience</span>
+              </div>
+            ) : null}
           </div>
 
           <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-5 shadow-[4px_4px_0px_#191A23]">
@@ -140,40 +212,68 @@ export function Settings({
           </div>
         </div>
 
-        {/* Right Columns Config forms */}
+        {/* Right Columns */}
         <div className="md:col-span-2 space-y-6">
-          
-          {/* Section 1: Core Profile Info */}
+
+          {/* Section 1: Coach Credentials & Expertise */}
           <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
             <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
-              <UserIcon className="w-4 h-4 text-[#191A23]" />
-              Athlete Credentials
+              <Award className="w-4 h-4 text-[#191A23]" />
+              Coach Credentials & Expertise
             </h3>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">REAL NAME</label>
+                <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">CERTIFICATIONS</label>
                 <input
                   type="text"
-                  value={user.name}
-                  id="input-settings-name-field"
-                  onChange={(e) => saveUserAndSync({ ...user, name: e.target.value })}
+                  value={user.certifications || ''}
+                  id="input-settings-certifications"
+                  onChange={(e) => updateField('certifications', e.target.value)}
+                  placeholder="e.g. NSCA-CSCS, ACE Certified"
+                  className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                />
+              </div>
+              <div>
+                <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">YEARS OF EXPERIENCE</label>
+                <input
+                  type="number"
+                  value={user.yearsOfExperience || 0}
+                  id="input-settings-experience"
+                  onChange={(e) => updateField('yearsOfExperience', parseInt(e.target.value) || 0)}
+                  min={0}
+                  max={100}
                   className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10"
                 />
               </div>
-              <div>
-                <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">ATHLETE EMAIL</label>
-                <input
-                  type="text"
-                  value={user.email}
-                  disabled
-                  className="w-full p-3 rounded-xl border-2 border-[#191A23]/40 outline-none text-xs font-black bg-[#F3F3F3] cursor-not-allowed text-slate-500"
-                />
-              </div>
+            </div>
+
+            <div>
+              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">SPECIALIZATIONS</label>
+              <input
+                type="text"
+                value={user.specializations || ''}
+                id="input-settings-specializations"
+                onChange={(e) => updateField('specializations', e.target.value)}
+                placeholder="e.g. Strength & Conditioning, Nutrition Coaching"
+                className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+              />
+            </div>
+
+            <div>
+              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">BIO / ABOUT ME</label>
+              <textarea
+                value={user.bio || ''}
+                id="input-settings-bio"
+                onChange={(e) => updateField('bio', e.target.value)}
+                placeholder="Tell potential clients about your coaching philosophy and approach..."
+                rows={3}
+                className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300 resize-none"
+              />
             </div>
           </div>
 
-          {/* Section 2: Biomechanical Notifications */}
+          {/* Section 2: Notification Settings */}
           <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
             <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
               <Bell className="w-4 h-4 text-[#191A23]" />
@@ -182,52 +282,241 @@ export function Settings({
 
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-black text-xs text-[#191A23] block">Push workout split alerts</span>
+                <span className="font-black text-xs text-[#191A23] block">New client inquiry alerts</span>
                 <span className="text-[9px] text-slate-500 font-bold leading-normal block max-w-sm">
-                  Receive live triggers on target muscular recruitment set updates, nutritional goals, and rest periods limits.
+                  Receive instant notifications when a potential client submits an inquiry or requests a consultation.
                 </span>
               </div>
               <input
                 type="checkbox"
                 checked={notificationsEnabled}
-                id="checkbox-settings-push-alert"
+                id="checkbox-settings-client-inquiries"
+                onChange={(e) => setNotificationsEnabled(e.target.checked)}
+                className="w-5 h-5 text-[#191A23] accent-[#B9FF66] border-2 border-[#191A23] checked:bg-[#B9FF66] rounded cursor-pointer"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-black text-xs text-[#191A23] block">Booking & session reminders</span>
+                <span className="text-[9px] text-slate-500 font-bold leading-normal block max-w-sm">
+                  Get reminded about upcoming coaching sessions, consultations, and scheduled check-ins.
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                checked={notificationsEnabled}
+                id="checkbox-settings-booking-reminders"
+                onChange={(e) => setNotificationsEnabled(e.target.checked)}
+                className="w-5 h-5 text-[#191A23] accent-[#B9FF66] border-2 border-[#191A23] checked:bg-[#B9FF66] rounded cursor-pointer"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-black text-xs text-[#191A23] block">Client progress updates</span>
+                <span className="text-[9px] text-slate-500 font-bold leading-normal block max-w-sm">
+                  Receive summaries when your clients log new workouts, measurements, or hit milestones.
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                checked={notificationsEnabled}
+                id="checkbox-settings-client-progress"
                 onChange={(e) => setNotificationsEnabled(e.target.checked)}
                 className="w-5 h-5 text-[#191A23] accent-[#B9FF66] border-2 border-[#191A23] checked:bg-[#B9FF66] rounded cursor-pointer"
               />
             </div>
           </div>
 
-          {/* Section 3: Metric resets and Retrigger Onboarding */}
+          {/* Section 3: Client Onboarding Templates */}
           <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
             <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
               <RefreshCw className="w-4 h-4 text-[#191A23]" />
-              Athlete Reset Control
+              Client Onboarding Templates
             </h3>
-            
+
             <p className="text-xs text-slate-500 font-semibold leading-relaxed">
-              If your current physical goals or dietary configurations have shifted, you can re-target variables via standard biometric onboarding.
+              Send a structured onboarding flow to new clients. Choose a template below to get them started.
             </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button
+                onClick={() => onNotify('Introductory Consultation template sent!')}
+                className="p-4 rounded-2xl border-2 border-[#191A23] bg-white hover:bg-[#B9FF66]/10 transition-all text-left cursor-pointer group"
+              >
+                <span className="font-black text-xs text-[#191A23] block">Intro Consultation</span>
+                <span className="text-[9px] text-slate-500 font-semibold block mt-1 leading-relaxed">
+                  Collect client goals, medical history, and availability.
+                </span>
+              </button>
+              <button
+                onClick={() => onNotify('Fitness Assessment template sent!')}
+                className="p-4 rounded-2xl border-2 border-[#191A23] bg-white hover:bg-[#B9FF66]/10 transition-all text-left cursor-pointer group"
+              >
+                <span className="font-black text-xs text-[#191A23] block">Fitness Assessment</span>
+                <span className="text-[9px] text-slate-500 font-semibold block mt-1 leading-relaxed">
+                  Baseline measurements, movement screening, and goals.
+                </span>
+              </button>
+              <button
+                onClick={() => onNotify('Nutrition Setup template sent!')}
+                className="p-4 rounded-2xl border-2 border-[#191A23] bg-white hover:bg-[#B9FF66]/10 transition-all text-left cursor-pointer group"
+              >
+                <span className="font-black text-xs text-[#191A23] block">Nutrition Setup</span>
+                <span className="text-[9px] text-slate-500 font-semibold block mt-1 leading-relaxed">
+                  Dietary preferences, restrictions, and meal planning.
+                </span>
+              </button>
+            </div>
 
             <div className="pt-2">
               <button
                 onClick={onRetriggerOnboarding}
                 id="btn-settings-onboarding-restart"
-                className="inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-[#B9FF66] text-[#191A23] border-2 border-[#191A23] text-xs font-black rounded-xl shadow-[3px_3px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none cursor-pointer transition-all"
+                className="inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-white text-[#191A23] border-2 border-[#191A23] text-xs font-black rounded-xl shadow-[3px_3px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none cursor-pointer transition-all"
               >
                 <RefreshCw className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>Re-launch Physical Setup Questionnaire</span>
+                <span>Customize Onboarding Flow</span>
               </button>
             </div>
           </div>
 
-          {/* Section 4: Help & Feedback */}
+          {/* Section 4: Services & Availability */}
+          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <Calendar className="w-4 h-4 text-[#191A23]" />
+              Services & Availability
+            </h3>
+
+            <div>
+              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">SERVICES OFFERED</label>
+              <textarea
+                value={user.services || ''}
+                id="input-settings-services"
+                onChange={(e) => updateField('services', e.target.value)}
+                placeholder="e.g. 1-on-1 Coaching, Group Sessions, Nutrition Planning, Program Design"
+                rows={2}
+                className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300 resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">AVAILABILITY HOURS</label>
+              <input
+                type="text"
+                value={user.availability || ''}
+                id="input-settings-availability"
+                onChange={(e) => updateField('availability', e.target.value)}
+                placeholder="e.g. Mon-Fri 6AM-8PM, Sat 8AM-12PM"
+                className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+              />
+            </div>
+
+            <div>
+              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-1">BOOKING LINK</label>
+              <div className="flex items-center gap-2">
+                <LinkIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                <input
+                  type="url"
+                  value={user.bookingLink || ''}
+                  id="input-settings-booking-link"
+                  onChange={(e) => updateField('bookingLink', e.target.value)}
+                  placeholder="https://calendly.com/your-link"
+                  className="w-full p-3 rounded-xl border-2 border-[#191A23] outline-none text-xs font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 5: Portfolio & Social Links */}
+          <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <Globe className="w-4 h-4 text-[#191A23]" />
+              Portfolio & Social Links
+            </h3>
+
+            {/* Portfolio Links */}
+            <div>
+              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-2">PORTFOLIO LINKS</label>
+              <div className="space-y-2">
+                {portfolioLinks.map((link, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2 rounded-xl border border-slate-200 bg-slate-50">
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="text-[10px] font-black text-[#191A23] min-w-[80px]">{link.platform}</span>
+                    <span className="text-[10px] text-slate-500 truncate flex-1">{link.url}</span>
+                    <button onClick={() => removePortfolioLink(i)} className="p-1 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer">
+                      <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  type="text"
+                  value={newPortfolioPlatform}
+                  onChange={(e) => setNewPortfolioPlatform(e.target.value)}
+                  placeholder="Platform"
+                  className="w-[120px] p-2 rounded-xl border-2 border-[#191A23] outline-none text-[10px] font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                />
+                <input
+                  type="url"
+                  value={newPortfolioUrl}
+                  onChange={(e) => setNewPortfolioUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="flex-1 p-2 rounded-xl border-2 border-[#191A23] outline-none text-[10px] font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                />
+                <button onClick={addPortfolioLink} className="p-2 bg-[#B9FF66] border-2 border-[#191A23] rounded-xl hover:bg-[#a8e85c] transition-colors cursor-pointer shrink-0">
+                  <Plus className="w-3.5 h-3.5 text-[#191A23]" />
+                </button>
+              </div>
+            </div>
+
+            {/* Social Links */}
+            <div className="border-t-2 border-[#191A23]/10 pt-4">
+              <label className="text-[9px] font-black text-slate-500 tracking-wider uppercase block mb-2">SOCIAL LINKS</label>
+              <div className="space-y-2">
+                {socialLinks.map((link, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2 rounded-xl border border-slate-200 bg-slate-50">
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="text-[10px] font-black text-[#191A23] min-w-[80px]">{link.platform}</span>
+                    <span className="text-[10px] text-slate-500 truncate flex-1">{link.url}</span>
+                    <button onClick={() => removeSocialLink(i)} className="p-1 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer">
+                      <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  type="text"
+                  value={newSocialPlatform}
+                  onChange={(e) => setNewSocialPlatform(e.target.value)}
+                  placeholder="Platform"
+                  className="w-[120px] p-2 rounded-xl border-2 border-[#191A23] outline-none text-[10px] font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                />
+                <input
+                  type="url"
+                  value={newSocialUrl}
+                  onChange={(e) => setNewSocialUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="flex-1 p-2 rounded-xl border-2 border-[#191A23] outline-none text-[10px] font-black bg-white focus:bg-[#B9FF66]/10 placeholder:text-slate-300"
+                />
+                <button onClick={addSocialLink} className="p-2 bg-[#B9FF66] border-2 border-[#191A23] rounded-xl hover:bg-[#a8e85c] transition-colors cursor-pointer shrink-0">
+                  <Plus className="w-3.5 h-3.5 text-[#191A23]" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 6: Help & Feedback */}
           <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
             <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
               <Heart className="w-4 h-4 text-[#191A23]" />
               Help & Feedback
             </h3>
             <p className="text-xs text-slate-500 font-semibold leading-relaxed">
-              Encountered a bug or have a suggestion? We'd love to hear from you. Reach out to our support team to help us improve FitSphere.
+              Have a suggestion, feature request, or need assistance? Our team is here to help you get the most out of FitSphere Pro. Reach out and we'll respond promptly.
             </p>
             <div className="pt-2">
               <a href="mailto:kundansaduyashwanth@gmail.com" className="inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-white text-[#191A23] border-2 border-[#191A23] text-xs font-black rounded-xl shadow-[3px_3px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none cursor-pointer transition-all">
@@ -236,7 +525,7 @@ export function Settings({
             </div>
           </div>
 
-          {/* Section 5: Legal & Privacy */}
+          {/* Section 7: Legal & Privacy */}
           <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
             <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
               <Scale className="w-4 h-4 text-[#191A23]" />
@@ -254,31 +543,34 @@ export function Settings({
             </div>
           </div>
 
-          {/* Section 6: About Developer */}
+          {/* Section 8: About FitSphere Pro */}
           <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
              <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
               <UserIcon className="w-4 h-4 text-[#191A23]" />
-              About Developer
+              About FitSphere Pro
             </h3>
             <div className="space-y-3 text-xs">
               <div className="flex flex-col">
-                <span className="text-[9px] font-black text-slate-500 tracking-wider uppercase mb-0.5">NAME</span>
+                <span className="text-[9px] font-black text-slate-500 tracking-wider uppercase mb-0.5">DEVELOPER</span>
                 <span className="font-extrabold text-[#191A23] text-sm">KUNDAN SADHU YASWANTH</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[9px] font-black text-slate-500 tracking-wider uppercase mb-0.5">EMAIL</span>
+                <span className="text-[9px] font-black text-slate-500 tracking-wider uppercase mb-0.5">CONTACT</span>
                 <a href="mailto:kundansaduyashwanth@gmail.com" className="font-extrabold text-indigo-600 hover:underline">kundansaduyashwanth@gmail.com</a>
               </div>
+              <p className="text-[10px] text-slate-500 font-semibold leading-relaxed pt-1 border-t border-slate-100">
+                FitSphere Pro — AI-powered coaching platform for fitness professionals. Empowering trainers to manage clients, deliver programs, and grow their business.
+              </p>
             </div>
           </div>
 
-          {/* Section 7: Account Actions */}
+          {/* Section 9: Account Actions */}
           <div className="bg-white border-2 border-[#191A23] rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
-            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none text-rose-600">
-              <AlertCircle className="w-4 h-4 text-rose-600" />
+            <h3 className="font-extrabold text-[#191A23] text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none">
+              <UserIcon className="w-4 h-4 text-[#191A23]" />
               Account Management
             </h3>
-            
+
             <div className="pt-2 space-y-4 flex flex-col">
               <button
                 onClick={onLogout}
@@ -287,20 +579,51 @@ export function Settings({
                 <span className="text-xs font-black text-[#191A23]">Sign Out</span>
                 <span className="font-black text-[#191A23]">→</span>
               </button>
-              
-              <button
-                onClick={onDeleteAccount}
-                className="w-full flex items-center justify-between p-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-600 group transition-all"
-              >
-                <span className="text-xs font-black text-rose-600 group-hover:text-white transition-colors">Delete Account</span>
-                <span className="font-black text-rose-600 group-hover:text-white transition-colors">⚠</span>
-              </button>
             </div>
+          </div>
+
+          {/* Section 10: Danger Zone */}
+          <div className="bg-white border-2 border-rose-600 rounded-[24px] p-6 shadow-[4px_4px_0px_#191A23] space-y-4">
+            <button
+              onClick={() => setDangerZoneOpen(!dangerZoneOpen)}
+              className="w-full flex items-center justify-between cursor-pointer"
+            >
+              <h3 className="font-extrabold text-sm flex items-center gap-2 uppercase font-mono tracking-wider leading-none text-rose-600">
+                <AlertCircle className="w-4 h-4 text-rose-600" />
+                Danger Zone
+              </h3>
+              {dangerZoneOpen ? <ChevronDown className="w-4 h-4 text-rose-600" /> : <ChevronRight className="w-4 h-4 text-rose-600" />}
+            </button>
+
+            {dangerZoneOpen && (
+              <div className="space-y-4 pt-2 border-t-2 border-rose-600/20">
+                <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-black text-xs text-rose-700 block">Delete Account</span>
+                      <span className="text-[10px] text-rose-600 font-semibold block mt-0.5 leading-relaxed">
+                        This action is irreversible. All your data, client information, and settings will be permanently removed. Please proceed with caution.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowDeleteConfirmModal(true)}
+                  className="w-full flex items-center justify-between p-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-600 group transition-all cursor-pointer"
+                >
+                  <span className="text-xs font-black text-rose-600 group-hover:text-white transition-colors">Delete Account</span>
+                  <span className="font-black text-rose-600 group-hover:text-white transition-colors">⚠</span>
+                </button>
+              </div>
+            )}
           </div>
 
         </div>
       </div>
 
+      {/* Legal Content Modal */}
       {showLegalContent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#191A23]/50 p-4 backdrop-blur-sm">
           <div className="bg-white border-2 border-[#191A23] rounded-[24px] shadow-[8px_8px_0px_#191A23] max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-slide-up">
@@ -352,6 +675,52 @@ export function Settings({
               >
                 Acknowledge & Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#191A23]/50 p-4 backdrop-blur-sm">
+          <div className="bg-white border-2 border-rose-600 rounded-[24px] shadow-[8px_8px_0px_#191A23] max-w-md w-full overflow-hidden animate-slide-up">
+            <div className="p-5 border-b-2 border-rose-600 bg-rose-50">
+              <h2 className="text-lg font-black text-rose-700 uppercase tracking-wider font-mono flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                Confirm Deletion
+              </h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-xs font-semibold text-slate-600 leading-relaxed">
+                This action cannot be undone. All your data, client information, and settings will be permanently deleted.
+              </p>
+              <div>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1">
+                  Type your email <span className="text-rose-600">{user.email}</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmInput}
+                  onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                  placeholder={user.email}
+                  className="w-full p-3 rounded-xl border-2 border-rose-600 outline-none text-xs font-black bg-white focus:bg-rose-50 placeholder:text-slate-300"
+                />
+              </div>
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  onClick={() => { setShowDeleteConfirmModal(false); setDeleteConfirmInput(''); }}
+                  className="flex-1 py-2.5 px-4 bg-white border-2 border-[#191A23] text-xs font-black rounded-xl shadow-[2px_2px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirmed}
+                  disabled={deleteConfirmInput !== user.email}
+                  className="flex-1 py-2.5 px-4 bg-rose-600 border-2 border-rose-700 text-white text-xs font-black rounded-xl shadow-[2px_2px_0px_#191A23] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Permanently Delete
+                </button>
+              </div>
             </div>
           </div>
         </div>
