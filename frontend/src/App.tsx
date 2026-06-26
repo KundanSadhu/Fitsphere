@@ -8,6 +8,7 @@ import { Workouts } from './pages/Workouts';
 import { Nutrition } from './pages/Nutrition';
 import { ProgressMatrix } from './pages/ProgressMatrix';
 import { AICoach } from './pages/AICoach';
+import { AITrainer } from './pages/AITrainer';
 import { MeditationZone } from './pages/MeditationZone';
 import { Competitions } from './pages/Competitions';
 import { Shop } from './pages/Shop';
@@ -425,6 +426,7 @@ export default function App() {
                 {activeTab === 'workout' && <Workouts workoutPlans={workoutPlans} selectedPlanId={selectedPlanId} setSelectedPlanId={setSelectedPlanId} selectedDayIndex={selectedDayIndex} setSelectedDayIndex={setSelectedDayIndex} onCompleteExercise={handleExerciseCompleted} />}
                 {activeTab === 'nutrition' && <Nutrition dietPlans={dietPlans} />}
                 {activeTab === 'progress' && <ProgressMatrix user={user} saveUserAndSync={saveUserAndSync} weightHistory={weightHistory} weightInput={weightInput} setWeightInput={setWeightInput} heightInput={heightInput} setHeightInput={setHeightInput} bmiValue={bmiValue} progressPhotos={progressPhotos} setProgressPhotos={setProgressPhotos} onAddWeightRecord={handleAddWeight} onNotify={showNotification} />}
+                {activeTab === 'ai-trainer' && <AITrainer />}
                 {activeTab === 'ai-coach' && <AICoach />}
                 {activeTab === 'meditation' && <MeditationZone />}
                 {activeTab === 'competitions' && <Competitions challenges={challenges} leaderboard={leaderboard} userPoints={user.points} onToggleJoin={handleToggleJoinChallenge} onClaimReward={handleClaimChallengeReward} onTriggerProgress={(id) => { setChallenges(prev => prev.map(c => c.id === id ? { ...c, progress: 100 } : c)); showNotification('Progress pushed to 100%! Claim rewards.'); }} />}

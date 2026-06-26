@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitSphere AI Trainer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; }
+        body { background: #0B1A2E; color: #fff; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .hero { display: flex; align-items: center; justify-content: space-between; padding: 40px 50px; background: linear-gradient(145deg, #0B1A2E, #122a44); border-radius: 40px; margin-bottom: 40px; border: 1px solid rgba(0, 229, 255, 0.1); flex-wrap: wrap; }
+        .hero-text { flex: 1.5; min-width: 300px; }
+        .badge { display: inline-block; background: rgba(0, 229, 255, 0.15); color: #00E5FF; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 8px 22px; border-radius: 50px; border: 1px solid rgba(0, 229, 255, 0.3); margin-bottom: 20px; }
+        .hero-text h1 { font-size: 52px; font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+        .hero-text h1 span { background: linear-gradient(135deg, #00E5FF, #2AC4B5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-text p { font-size: 18px; color: rgba(255,255,255,0.7); max-width: 550px; }
+        .trainer-section { background: #0B1A2E; border-radius: 40px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 30px; }
+        .header h2 { font-size: 28px; font-weight: 700; }
+        .header h2 small { font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.5); margin-left: 15px; }
+        .buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); padding: 10px 24px; border-radius: 50px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s ease; }
+        .btn.active { background: #00E5FF; color: #0B1A2E; border-color: #00E5FF; box-shadow: 0 4px 20px rgba(0,229,255,0.3); }
+        .btn:hover:not(.active) { border-color: rgba(255,255,255,0.4); color: #fff; }
+        .grid { display: flex; gap: 30px; flex-wrap: wrap; }
+        .video-box { flex: 2; min-width: 400px; background: #000; border-radius: 24px; overflow: hidden; border: 1px solid rgba(0,229,255,0.2); position: relative; aspect-ratio: 16/10; }
+        .video-box img { width: 100%; height: 100%; object-fit: cover; }
+        .stats-panel { flex: 1; min-width: 260px; background: #14283E; border-radius: 24px; padding: 30px 25px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 20px; }
+        .stat-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 18px; }
+        .stat-item:last-child { border-bottom: none; }
+        .stat-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+        .stat-value { font-size: 32px; font-weight: 800; }
+        .stat-value.exercise-name { color: #00E5FF; font-size: 28px; }
+        .stat-value.angle { color: #FFD700; font-size: 26px; }
+        .stat-value.reps { color: #2AC4B5; }
+        .feedback-box { background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px 20px; border-left: 4px solid #00E5FF; }
+        .feedback-box .fb-text { font-size: 16px; font-weight: 600; }
+        @media (max-width: 860px) {
+            .hero { flex-direction: column; text-align: center; padding: 30px 20px; }
+            .hero-text h1 { font-size: 36px; }
+            .video-box { min-width: 100%; }
+            .grid { flex-direction: column; }
+            .header { flex-direction: column; align-items: flex-start; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <section class="hero">
+        <div class="hero-text">
+            <span class="badge">AI-POWERED COACHING</span>
+            <h1>Smarter, Data-Driven <br><span>Fitness for Athletes</span></h1>
+            <p>FitSphere brings AI-driven movement analysis into one intelligent platform.</p>
+        </div>
+    </section>
+    <section class="trainer-section">
+        <div class="header">
+            <h2>Live AI Trainer <small>Real-time posture correction</small></h2>
+            <div class="buttons">
+                <button class="btn active" data-exercise="squat">Squat</button>
+                <button class="btn" data-exercise="pushup">Push-up</button>
+                <button class="btn" data-exercise="curl">Bicep Curl</button>
+            </div>
+        </div>
+        <div class="grid">
+            <div class="video-box">
+                <img id="video-feed" src="/video_feed" alt="AI Trainer Feed">
+            </div>
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <div class="stat-label">Exercise</div>
+                    <div class="stat-value exercise-name" id="ex-name">Squat</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Reps</div>
+                    <div class="stat-value reps" id="reps-count">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Joint Angle</div>
+                    <div class="stat-value angle" id="angle-display">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Posture</div>
+                    <div id="status-text" style="font-size:18px;font-weight:700;">Waiting</div>
+                </div>
+                <div class="feedback-box">
+                    <div class="fb-text" id="feedback-msg">Stand in front of the camera</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<script>
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            buttons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            fetch('/set_exercise', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exercise: this.dataset.exercise })
+            });
+        });
+    });
+    setInterval(() => {
+        fetch('/get_stats').then(r => r.json()).then(d => {
+            document.getElementById('ex-name').textContent = d.exercise;
+            document.getElementById('reps-count').textContent = d.reps;
+            document.getElementById('angle-display').textContent = d.angle;
+            document.getElementById('feedback-msg').textContent = d.feedback;
+            const st = document.getElementById('status-text');
+            st.textContent = d.status;
+            st.style.color = d.status === 'Correct' ? '#2AC4B5' : '#FF5E00';
+        }).catch(() => {});
+    }, 500);
+</script>
+</body>
+</html>

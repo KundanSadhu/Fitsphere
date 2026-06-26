@@ -1,6 +1,6 @@
 import { 
   LayoutDashboard, Dumbbell, Apple, TrendingUp, Bot, 
-  Medal, Trophy, ShoppingBag, Settings, LogOut, Sun, Moon
+  Medal, Trophy, ShoppingBag, Settings, LogOut, Sun, Moon, Camera
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -17,6 +17,7 @@ interface SidebarNavigationProps {
 export function SidebarNavigation({ activeTab, setActiveTab, user, onLogout, isOpen = true, isDarkMode, onToggleDarkMode }: SidebarNavigationProps) {
   const mainSidebarItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'ai-trainer', icon: Camera, label: 'AI Trainer' },
     { id: 'workout', icon: Dumbbell, label: 'Workout Splits' },
     { id: 'nutrition', icon: Apple, label: 'Nutrition & Meals' },
     { id: 'progress', icon: TrendingUp, label: 'Progress Matrix' },

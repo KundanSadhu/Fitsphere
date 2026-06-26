@@ -81,7 +81,7 @@ export const BodyModel = () => {
             <Activity className="w-4 h-4 md:w-5 md:h-5 text-indigo-500" />
             Anatomy Map
           </h4>
-          <p className="text-xs md:text-sm text-slate-500 mt-0.5 md:mt-1">Tap a muscle group to reveal targeting protocol</p>
+          <p className="text-xs md:text-sm text-slate-700 font-semibold mt-0.5 md:mt-1">Tap a muscle group to reveal targeting protocol</p>
         </div>
 
         {/* Dynamic Vector Anatomy Figure */}
@@ -133,73 +133,87 @@ export const BodyModel = () => {
             <path d="M125,62 v16" stroke="#334155" strokeWidth="1" opacity="0.5"/>
 
             {/* Interactive highlight overlays on Muscle Groups */}
-            {MUSCLE_GROUPS.map((m) => {
-              const isSelected = selectedMuscle.id === m.id;
-              const isHovered = hoveredMuscle === m.id;
-
-              return (
-                <g
-                  key={m.id}
-                  className="cursor-pointer"
-                  onMouseEnter={() => setHoveredMuscle(m.id)}
-                  onMouseLeave={() => setHoveredMuscle(null)}
-                  onClick={() => setSelectedMuscle(m)}
-                >
-                  {m.points.map((pt, i) => (
-                    <g key={`${m.id}-${i}`}>
-                      {isSelected && m.points.length > 1 && i === 0 && (
-                        <path 
-                          d={`M${m.points[0].x},${m.points[0].y} Q125,${m.points[0].y - 20} ${m.points[1].x},${m.points[1].y}`} 
-                          stroke={m.color} 
-                          strokeWidth="1.5" 
-                          fill="none" 
-                          strokeDasharray="4 4"
-                          className="opacity-50 transition-opacity duration-700"
-                        />
-                      )}
-                      {/* Outer target reticle */}
-                      <circle
-                        cx={pt.x}
-                        cy={pt.y}
-                        r={isSelected ? 18 : isHovered ? 14 : 0}
-                        fill="transparent"
-                        stroke={m.color}
-                        strokeWidth="1.5"
-                        strokeDasharray="4 4"
-                        className="transition-all duration-500 ease-out origin-center"
-                        style={{ transformOrigin: `${pt.x}px ${pt.y}px`, transform: isSelected ? 'rotate(90deg)' : 'rotate(0deg)' }}
-                      />
-                      
-                      {/* Glowing hotspot dot */}
-                      <circle
-                        cx={pt.x}
-                        cy={pt.y}
-                        r={isSelected ? 8 : isHovered ? 8 : 6}
+            {(() => {
+              const highlightPaths: Record<string, string> = {
+                'chest': 'M108,96 Q125,82 142,96 C148,100 150,108 150,112 Q125,118 100,112 C100,108 102,100 108,96 Z',
+                'shoulders': 'M88,84 Q85,78 88,74 Q93,78 95,82 Q94,86 88,84 Z M162,84 Q165,78 162,74 Q157,78 155,82 Q156,86 162,84 Z',
+                'biceps': 'M86,110 C80,118 80,132 84,140 C88,144 92,140 92,132 C92,120 88,112 86,110 Z M164,110 C170,118 170,132 166,140 C162,144 158,140 158,132 C158,120 162,112 164,110 Z',
+                'triceps': 'M82,108 C78,116 78,130 82,138 C86,141 90,138 90,130 C90,118 84,112 82,108 Z M168,108 C172,116 172,130 168,138 C164,141 160,138 160,130 C160,118 166,112 168,108 Z',
+                'core': 'M105,132 C110,128 140,128 145,132 C148,142 146,155 144,162 C138,166 112,166 106,162 C104,155 102,142 105,132 Z',
+                'quads': 'M104,178 C110,175 140,175 146,178 C150,190 148,210 144,228 C140,232 110,232 106,228 C102,210 100,190 104,178 Z',
+                'calves': 'M108,246 C114,242 136,242 142,246 C144,256 142,268 140,278 C136,282 114,282 110,278 C108,268 106,256 108,246 Z',
+              };
+              return MUSCLE_GROUPS.map((m) => {
+                const isSelected = selectedMuscle.id === m.id;
+                const isHovered = hoveredMuscle === m.id;
+                const hl = highlightPaths[m.id];
+                return (
+                  <g key={m.id}>
+                    {hl && (
+                      <path
+                        d={hl}
                         fill={m.color}
-                        fillOpacity={isSelected ? 1 : 0.8}
-                        stroke="#ffffff"
-                        strokeWidth={isSelected ? 3 : 2}
-                        filter={isSelected || isHovered ? 'url(#glow)' : undefined}
-                        className="transition-all duration-300"
-                      />
-                      
-                      {/* Core interactive mapping pulses */}
-                      <circle
-                        cx={pt.x}
-                        cy={pt.y}
-                        r={isSelected ? 24 : 15}
-                        fill="transparent"
+                        fillOpacity={isSelected ? 0.3 : isHovered ? 0.18 : 0}
                         stroke={m.color}
-                        strokeWidth="2"
-                        strokeOpacity={isSelected ? 0.6 : 0}
-                        className={`transition-all ${isSelected ? 'animate-ping duration-1000' : ''}`}
-                        style={{ transformOrigin: `${pt.x}px ${pt.y}px` }}
+                        strokeWidth={isSelected ? 2.5 : isHovered ? 1.5 : 0}
+                        strokeOpacity={isSelected ? 0.8 : isHovered ? 0.5 : 0}
+                        className="transition-all duration-500 cursor-pointer"
+                        onMouseEnter={() => setHoveredMuscle(m.id)}
+                        onMouseLeave={() => setHoveredMuscle(null)}
+                        onClick={() => setSelectedMuscle(m)}
                       />
-                    </g>
-                  ))}
-                </g>
-              );
-            })}
+                    )}
+                    {m.points.map((pt, i) => (
+                      <g key={`${m.id}-${i}`}>
+                        {isSelected && m.points.length > 1 && i === 0 && (
+                          <path 
+                            d={`M${m.points[0].x},${m.points[0].y} Q125,${m.points[0].y - 20} ${m.points[1].x},${m.points[1].y}`} 
+                            stroke={m.color} 
+                            strokeWidth="1.5" 
+                            fill="none" 
+                            strokeDasharray="4 4"
+                            className="opacity-50 transition-opacity duration-700"
+                          />
+                        )}
+                        <circle
+                          cx={pt.x}
+                          cy={pt.y}
+                          r={isSelected ? 18 : isHovered ? 14 : 0}
+                          fill="transparent"
+                          stroke={m.color}
+                          strokeWidth="1.5"
+                          strokeDasharray="4 4"
+                          className="transition-all duration-500 ease-out origin-center"
+                          style={{ transformOrigin: `${pt.x}px ${pt.y}px`, transform: isSelected ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                        />
+                        <circle
+                          cx={pt.x}
+                          cy={pt.y}
+                          r={isSelected ? 8 : isHovered ? 8 : 6}
+                          fill={m.color}
+                          fillOpacity={isSelected ? 1 : 0.8}
+                          stroke="#ffffff"
+                          strokeWidth={isSelected ? 3 : 2}
+                          filter={isSelected || isHovered ? 'url(#glow)' : undefined}
+                          className="transition-all duration-300"
+                        />
+                        <circle
+                          cx={pt.x}
+                          cy={pt.y}
+                          r={isSelected ? 24 : 15}
+                          fill="transparent"
+                          stroke={m.color}
+                          strokeWidth="2"
+                          strokeOpacity={isSelected ? 0.6 : 0}
+                          className={`transition-all ${isSelected ? 'animate-ping duration-1000' : ''}`}
+                          style={{ transformOrigin: `${pt.x}px ${pt.y}px` }}
+                        />
+                      </g>
+                    ))}
+                  </g>
+                );
+              });
+            })()}
           </svg>
 
           {/* Quick HUD indicator at the bottom */}
@@ -215,11 +229,11 @@ export const BodyModel = () => {
       </div>
 
       {/* Recommended Exercise guide card */}
-      <div className="flex flex-col justify-between p-4 md:p-6 rounded-[20px] md:rounded-2xl bg-slate-50 border border-slate-200 shadow-sm relative overflow-hidden">
+      <div className="flex flex-col justify-between p-4 md:p-6 rounded-[20px] md:rounded-2xl border-2 relative overflow-hidden transition-all duration-500" style={{ borderColor: selectedMuscle.color, backgroundColor: `${selectedMuscle.color}08` }}>
         
         {/* Decorative background element corresponding to muscle color */}
         <div 
-          className="absolute -top-16 -right-16 w-32 h-32 md:w-48 md:h-48 rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-700" 
+          className="absolute -top-16 -right-16 w-32 h-32 md:w-48 md:h-48 rounded-full blur-3xl opacity-30 pointer-events-none transition-all duration-700" 
           style={{ backgroundColor: selectedMuscle.color }} 
         />
 
@@ -233,16 +247,16 @@ export const BodyModel = () => {
             </div>
             <div>
               <h4 className="font-extrabold text-slate-900 tracking-tight text-lg md:text-xl">{selectedMuscle.name}</h4>
-              <p className="text-[10px] md:text-xs font-semibold text-slate-500 uppercase tracking-widest">{selectedMuscle.id} Analysis</p>
+              <p className="text-[10px] md:text-xs font-semibold text-slate-700 uppercase tracking-widest">{selectedMuscle.id} Analysis</p>
             </div>
           </div>
 
-          <p className="text-xs md:text-sm text-slate-600 leading-relaxed font-medium mb-4 md:mb-6 mt-2 md:mt-4">
+          <p className="text-xs md:text-sm leading-relaxed font-medium mb-4 md:mb-6 mt-2 md:mt-4" style={{ color: `${selectedMuscle.color}CC` }}>
             {selectedMuscle.desc}
           </p>
 
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-1.5 mb-4 isolate">
-            <span className="text-xs font-bold text-slate-400 tracking-widest uppercase pl-3 pt-2 block mb-2">
+          <div className="rounded-xl border p-1.5 mb-4 isolate transition-all duration-300" style={{ backgroundColor: `${selectedMuscle.color}06`, borderColor: `${selectedMuscle.color}30` }}>
+            <span className="text-xs font-bold text-slate-600 tracking-widest uppercase pl-3 pt-2 block mb-2">
               Primary Exercises
             </span>
             <div className="space-y-1">
@@ -252,10 +266,9 @@ export const BodyModel = () => {
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors group cursor-default"
                 >
                   <div 
-                    className="w-6 h-6 rounded bg-slate-100 text-slate-500 flex items-center justify-center text-[10px] font-black group-hover:text-white transition-colors"
-                    style={{ '--hover-color': selectedMuscle.color } as any}
+                    className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-black text-white transition-all duration-300"
+                    style={{ backgroundColor: selectedMuscle.color }}
                   >
-                    <style>{`.group:hover > div { background-color: var(--hover-color); }`}</style>
                     0{i + 1}
                   </div>
                   <span className="font-semibold text-slate-800 text-sm">{ex}</span>
@@ -265,9 +278,9 @@ export const BodyModel = () => {
           </div>
         </div>
 
-        <div className="pt-4 mt-auto flex items-start gap-2.5 text-xs font-medium text-slate-500 bg-blue-50/50 p-4 rounded-xl border border-blue-100/50 relative z-10">
-          <ShieldCheck className="w-5 h-5 text-blue-500 shrink-0" />
-          <p className="leading-snug">Movements shown are optimized for <strong className="text-slate-700">hypertrophic stimulation</strong> and automatically factor into your daily workout splits.</p>
+        <div className="pt-4 mt-auto flex items-start gap-2.5 text-xs font-medium rounded-xl relative z-10 transition-all duration-300" style={{ backgroundColor: `${selectedMuscle.color}12`, padding: '1rem', border: `1px solid ${selectedMuscle.color}25` }}>
+          <ShieldCheck className="w-5 h-5 shrink-0" style={{ color: selectedMuscle.color }} />
+          <p className="leading-snug" style={{ color: `${selectedMuscle.color}CC` }}>Movements shown are optimized for <strong style={{ color: selectedMuscle.color }}>hypertrophic stimulation</strong> and automatically factor into your daily workout splits.</p>
         </div>
       </div>
     </div>

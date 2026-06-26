@@ -29,7 +29,7 @@ export const WaterTracker = ({ goal = 8 }: WaterTrackerProps) => {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="font-black text-[#191A23] text-base">H2O Hydro Tracker</h3>
-          <p className="text-xs text-slate-500 font-semibold">Keep muscle hydration cells at maximum volume</p>
+          <p className="text-xs text-slate-700 font-semibold">Keep muscle hydration cells at maximum volume</p>
         </div>
         <div className="w-9 h-9 rounded-lg bg-[#B9FF66] border-2 border-[#191A23] flex items-center justify-center shadow-[1.5px_1.5px_0px_#191A23]">
           <CupSoda className="w-5 h-5 text-[#191A23]" />
@@ -39,7 +39,7 @@ export const WaterTracker = ({ goal = 8 }: WaterTrackerProps) => {
       <div className="flex items-center justify-between gap-4 mb-5">
         <div className="flex items-baseline gap-1">
           <span className="text-3xl font-black text-[#191A23]">{glasses}</span>
-          <span className="text-xs font-bold text-slate-500">/ {goal} glasses</span>
+          <span className="text-xs font-bold text-slate-700">/ {goal} glasses</span>
         </div>
         
         <div className="flex gap-2">
@@ -67,17 +67,30 @@ export const WaterTracker = ({ goal = 8 }: WaterTrackerProps) => {
             className={`h-11 rounded-xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all ${
               i < glasses
                 ? 'bg-[#B9FF66] border-[#191A23] text-[#191A23] shadow-[1.5px_1.5px_0px_#191A23] font-mono'
-                : 'bg-[#F3F3F3] border-transparent text-slate-400 hover:border-[#191A23]/50'
+                : 'bg-sky-50 border-sky-200 text-sky-400 hover:bg-sky-100 hover:border-sky-300'
             }`}
           >
-            <CupSoda className={`w-4 h-4 ${i < glasses ? 'text-[#191A23]' : 'text-slate-400'}`} />
-            <span className="text-[9px] font-black mt-0.5">{i + 1}</span>
+            <CupSoda className={`w-4 h-4 ${i < glasses ? 'text-[#191A23]' : 'text-sky-400'}`} />
+            <span className={`text-[9px] font-black mt-0.5 ${i < glasses ? 'text-[#191A23]' : 'text-sky-400'}`}>{i + 1}</span>
           </div>
         ))}
       </div>
 
+      {/* Progress bar */}
+      <div className="mb-3">
+        <div className="w-full h-3 rounded-full bg-sky-100 border border-sky-200 overflow-hidden">
+          <div 
+            className="h-full rounded-full transition-all duration-500 ease-out"
+            style={{ 
+              width: `${pct}%`,
+              background: `linear-gradient(90deg, #60a5fa, #38bdf8, #B9FF66)`
+            }}
+          />
+        </div>
+      </div>
+
       {/* Progress string */}
-      <div className="text-xs flex items-center justify-between pt-1 text-slate-600 font-bold">
+      <div className="text-xs flex items-center justify-between text-slate-600 font-bold">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full bg-[#B9FF66] border border-[#191A23]" />
           <span>{pct.toFixed(0)}% Hydrated</span>
