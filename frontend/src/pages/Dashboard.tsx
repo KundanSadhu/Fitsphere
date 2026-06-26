@@ -6,6 +6,7 @@ import { BodyModel } from '../components/BodyModel';
 import { DailyTip } from '../components/DailyTip';
 import { WaterTracker } from '../components/WaterTracker';
 import { getGoogleFitSteps } from '../lib/googleApi';
+import { AITrainerEmbed } from '../components/AITrainerEmbed';
 
 interface DashboardProps {
   user: User;
@@ -105,6 +106,8 @@ export function Dashboard({ user, workoutPlans, selectedDayIndex, weightHistory 
           <WaterTracker goal={8} />
         </div>
       </div>
+
+      <AITrainerEmbed />
     </div>
   );
 }

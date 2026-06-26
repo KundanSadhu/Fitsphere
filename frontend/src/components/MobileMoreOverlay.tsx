@@ -1,5 +1,5 @@
 import { 
-  Medal, Trophy, ShoppingBag, Settings, LogOut, X, Camera
+  Medal, Trophy, ShoppingBag, Settings, LogOut, X
 } from 'lucide-react';
 
 interface MobileMoreOverlayProps {
@@ -14,7 +14,6 @@ export function MobileMoreOverlay({ isOpen, onClose, activeTab, setActiveTab, on
   if (!isOpen) return null;
 
   const moreItems = [
-    { id: 'ai-trainer', icon: Camera, label: 'AI Trainer' },
     { id: 'meditation', icon: Medal, label: 'Meditation Zone' },
     { id: 'competitions', icon: Trophy, label: 'Client Challenges' },
     { id: 'shop', icon: ShoppingBag, label: 'Recommended Products' },

@@ -5,7 +5,7 @@ export const INITIAL_USER: User = {
   name: 'Kundan Saduyashwanth',
   email: 'kundansaduyashwanth@gmail.com',
   role: 'trainer',
-  photoUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop',
+  photoUrl: 'https://m.gettywallpapers.com/wp-content/uploads/2023/05/GYM-Bodybuilder-Anime-Boy-Avatar.jpg',
   streak: 5,
   level: 4,
   points: 450,
