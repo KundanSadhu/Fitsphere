@@ -151,15 +151,6 @@ export function AITrainer() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-amber-50 border-2 border-amber-200 text-amber-800 text-xs">
-            <p className="font-black mb-1">⚠️ Setup Required</p>
-            <p className="font-semibold">Install Python deps and run the AI Trainer server:</p>
-            <code className="block mt-2 bg-amber-100 p-2 rounded-lg text-[10px] font-mono">
-              cd ai_trainer<br />
-              pip install flask opencv-python mediapipe numpy<br />
-              python app.py
-            </code>
-          </div>
         </div>
       </div>
     </div>
