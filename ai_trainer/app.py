@@ -2,156 +2,171 @@ import cv2
 import numpy as np
 from flask import Flask, Response, request, jsonify
 from flask_cors import CORS
-import math
+import mediapipe as mp
+import threading
+import time
 import os
-import urllib.request
 
 app = Flask(__name__)
 CORS(app)
 
-# Download model if not present
-MODEL_URL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
-MODEL_PATH = "pose_landmarker_lite.task"
-
-if not os.path.exists(MODEL_PATH):
-    print("Downloading Pose Landmarker model...")
-    urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
-    print("Model downloaded!")
-
-from mediapipe.tasks.python import vision
-from mediapipe.tasks.python.core.base_options import BaseOptions
-import mediapipe as mp
-
-options = vision.PoseLandmarkerOptions(
-    base_options=BaseOptions(model_asset_path=MODEL_PATH),
-    running_mode=vision.RunningMode.IMAGE,
-    min_pose_detection_confidence=0.7,
+mp_pose = mp.solutions.pose
+pose = mp_pose.Pose(
+    min_detection_confidence=0.7,
     min_tracking_confidence=0.7,
+    model_complexity=1,
 )
-landmarker = vision.PoseLandmarker.create_from_options(options)
+mp_drawing = mp.solutions.drawing_utils
+mp_drawing_styles = mp.solutions.drawing_styles
 
-current_exercise = "squat"
-rep_count = 0
-state = "UP"
-angle_value = 0
-feedback_msg = "Stand by..."
-posture_status = "Waiting"
+state_lock = threading.Lock()
 
-squat_down = False
-curl_down = False
-pushup_down = False
+class TrainerState:
+    def __init__(self):
+        self.exercise = "squat"
+        self.reps = 0
+        self.angle = 0.0
+        self.feedback = "Stand by..."
+        self.status = "Waiting"
+        self.phase = "UP"
+        self.cycle_ready = False
 
+state = TrainerState()
+
+EXERCISE_CONFIG = {
+    "squat": {
+        "name": "Squat",
+        "joints": ("hip", "knee", "ankle"),
+        "down_angle": 90,
+        "up_angle": 160,
+        "feedback": {
+            "back": "Keep your back straight!",
+            "down": "Go DOWN — push hips back",
+            "up": "Stand UP tall",
+            "good": "Great form!",
+            "rep": "Rep counted!",
+        },
+    },
+    "curl": {
+        "name": "Bicep Curl",
+        "joints": ("shoulder", "elbow", "wrist"),
+        "down_angle": 120,
+        "up_angle": 30,
+        "feedback": {
+            "down": "Lower the weight slowly",
+            "up": "Curl UP!",
+            "good": "Controlled movement",
+            "rep": "Rep counted!",
+        },
+    },
+    "pushup": {
+        "name": "Push-Up",
+        "joints": ("shoulder", "elbow", "wrist"),
+        "down_angle": 90,
+        "up_angle": 140,
+        "feedback": {
+            "back": "Keep your body straight!",
+            "down": "Lower chest to floor",
+            "up": "Push UP!",
+            "good": "Solid form",
+            "rep": "Rep counted!",
+        },
+    },
+}
+
+def get_landmark(landmarks, idx):
+    return np.array([landmarks[idx].x, landmarks[idx].y])
 
 def calculate_angle(a, b, c):
-    a = np.array(a)
-    b = np.array(b)
-    c = np.array(c)
+    a, b, c = np.array(a), np.array(b), np.array(c)
     radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
     angle = np.abs(radians * 180.0 / np.pi)
-    if angle > 180.0:
-        angle = 360 - angle
-    return angle
-
-
-def draw_skeleton(frame, landmarks):
-    connections = [
-        (11, 12), (12, 14), (14, 16), (11, 13), (13, 15),
-        (11, 23), (12, 24), (23, 24), (23, 25), (24, 26),
-        (25, 27), (26, 28), (27, 29), (28, 30), (29, 31), (30, 32),
-        (27, 31), (28, 32), (11, 23), (12, 24)
-    ]
-    h, w, _ = frame.shape
-    pts = {}
-    for i, lm in enumerate(landmarks):
-        cx, cy = int(lm.x * w), int(lm.y * h)
-        pts[i] = (cx, cy)
-        cv2.circle(frame, (cx, cy), 3, (0, 229, 255), -1)
-
-    for a, b in connections:
-        if a in pts and b in pts:
-            cv2.line(frame, pts[a], pts[b], (255, 255, 255), 2)
-
+    return min(angle, 360 - angle)
 
 def process_exercise(landmarks):
-    global rep_count, state, feedback_msg, posture_status, angle_value
-    global squat_down, curl_down, pushup_down
+    global state
+    cfg = EXERCISE_CONFIG.get(state.exercise)
+    if not cfg:
+        return
 
     try:
-        def lm(idx):
-            return [landmarks[idx].x, landmarks[idx].y]
+        def lm(idx): return [landmarks[idx].x, landmarks[idx].y]
 
-        l_shoulder = lm(11)
-        l_elbow = lm(13)
-        l_wrist = lm(15)
-        l_hip = lm(23)
-        l_knee = lm(25)
-        l_ankle = lm(27)
+        l_shoulder, l_elbow, l_wrist = lm(11), lm(13), lm(15)
+        l_hip, l_knee, l_ankle = lm(23), lm(25), lm(27)
 
-        feedback_msg = "Good form!"
-        posture_status = "Correct"
+        with state_lock:
+            state.feedback = cfg["feedback"]["good"]
+            state.status = "Correct"
 
-        if current_exercise == "squat":
-            angle_value = calculate_angle(l_hip, l_knee, l_ankle)
+            if state.exercise == "squat":
+                angle = calculate_angle(l_hip, l_knee, l_ankle)
+                state.angle = angle
 
-            if abs(l_shoulder[0] - l_hip[0]) > 0.08:
-                feedback_msg = "Keep your back straight!"
-                posture_status = "Incorrect"
+                if abs(l_shoulder[0] - l_hip[0]) > 0.08:
+                    state.feedback = cfg["feedback"]["back"]
+                    state.status = "Incorrect"
 
-            if angle_value < 90:
-                state = "DOWN"
-                squat_down = True
-                if feedback_msg == "Good form!":
-                    feedback_msg = "Go UP now!"
-            elif angle_value > 160 and squat_down:
-                state = "UP"
-                rep_count += 1
-                squat_down = False
-                feedback_msg = "Rep counted!"
-                posture_status = "Correct"
+                if angle < cfg["down_angle"]:
+                    state.phase = "DOWN"
+                    state.cycle_ready = True
+                    if state.status == "Correct":
+                        state.feedback = "Rise UP — drive through heels"
+                elif angle > cfg["up_angle"] and state.cycle_ready:
+                    state.phase = "UP"
+                    state.reps += 1
+                    state.cycle_ready = False
+                    state.feedback = cfg["feedback"]["rep"]
 
-        elif current_exercise == "curl":
-            angle_value = calculate_angle(l_shoulder, l_elbow, l_wrist)
+            elif state.exercise == "curl":
+                angle = calculate_angle(l_shoulder, l_elbow, l_wrist)
+                state.angle = angle
 
-            if angle_value < 30:
-                state = "UP"
-                curl_down = True
-                feedback_msg = "Extend arm down!"
-            elif angle_value > 120 and curl_down:
-                state = "DOWN"
-                rep_count += 1
-                curl_down = False
-                feedback_msg = "Rep counted!"
-                posture_status = "Correct"
+                if angle < cfg["up_angle"]:
+                    state.phase = "UP"
+                    state.cycle_ready = True
+                    state.feedback = cfg["feedback"]["down"]
+                elif angle > cfg["down_angle"] and state.cycle_ready:
+                    state.phase = "DOWN"
+                    state.reps += 1
+                    state.cycle_ready = False
+                    state.feedback = cfg["feedback"]["rep"]
 
-        elif current_exercise == "pushup":
-            angle_value = calculate_angle(l_shoulder, l_elbow, l_wrist)
+            elif state.exercise == "pushup":
+                angle = calculate_angle(l_shoulder, l_elbow, l_wrist)
+                state.angle = angle
 
-            if abs(l_shoulder[0] - l_hip[0]) > 0.08:
-                feedback_msg = "Keep your body straight!"
-                posture_status = "Incorrect"
+                if abs(l_shoulder[0] - l_hip[0]) > 0.08:
+                    state.feedback = cfg["feedback"]["back"]
+                    state.status = "Incorrect"
 
-            if angle_value < 90:
-                state = "DOWN"
-                pushup_down = True
-                feedback_msg = "Push UP now!"
-            elif angle_value > 140 and pushup_down:
-                state = "UP"
-                rep_count += 1
-                pushup_down = False
-                feedback_msg = "Rep counted!"
-                posture_status = "Correct"
+                if angle < cfg["down_angle"]:
+                    state.phase = "DOWN"
+                    state.cycle_ready = True
+                    if state.status == "Correct":
+                        state.feedback = cfg["feedback"]["up"]
+                elif angle > cfg["up_angle"] and state.cycle_ready:
+                    state.phase = "UP"
+                    state.reps += 1
+                    state.cycle_ready = False
+                    state.feedback = cfg["feedback"]["rep"]
 
-    except Exception:
-        pass
-
+    except Exception as e:
+        print(f"[process_exercise] {e}")
 
 def generate_frames():
-    global rep_count, state, angle_value, feedback_msg, posture_status
+    global state
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    cap.set(cv2.CAP_PROP_FPS, 30)
 
-    cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        print("ERROR: Cannot access webcam!")
+        print("[ERROR] Cannot access webcam!")
         return
+
+    fps_start = time.time()
+    fps_frames = 0
 
     while True:
         success, frame = cap.read()
@@ -160,62 +175,92 @@ def generate_frames():
 
         frame = cv2.flip(frame, 1)
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        rgb.flags.writeable = False
 
-        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-        result = landmarker.detect(mp_image)
+        results = pose.process(rgb)
 
-        if result.pose_landmarks:
-            landmarks = result.pose_landmarks[0]
-            draw_skeleton(frame, landmarks)
-            process_exercise(landmarks)
+        rgb.flags.writeable = True
 
-            cv2.putText(frame, f"Angle: {int(angle_value)}", (20, 50),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 229, 255), 2)
-            cv2.putText(frame, f"Reps: {rep_count}", (20, 100),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        if results.pose_landmarks:
+            mp_drawing.draw_landmarks(
+                frame,
+                results.pose_landmarks,
+                mp_pose.POSE_CONNECTIONS,
+                landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+            )
+            process_exercise(results.pose_landmarks.landmark)
+
+            with state_lock:
+                angle_text = f"Angle: {int(state.angle)}"
+                rep_text = f"Reps: {state.reps}"
+                status_text = state.status if state.status == "Correct" else "Fix Form"
+
+            cv2.putText(frame, angle_text, (20, 40),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 229, 255), 2)
+            cv2.putText(frame, rep_text, (20, 80),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+
+            color = (0, 200, 0) if state.status == "Correct" else (0, 0, 200)
+            cv2.putText(frame, status_text, (20, 120),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
         else:
-            cv2.putText(frame, "No body detected", (20, 50),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            cv2.putText(frame, "No body detected - stand in view", (20, 40),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 200), 2)
+            with state_lock:
+                if state.status != "Waiting":
+                    state.feedback = "Step into camera view"
+                    state.status = "Waiting"
 
-        ret, buffer = cv2.imencode('.jpg', frame)
+        fps_frames += 1
+        elapsed = time.time() - fps_start
+        if elapsed >= 1.0:
+            fps_start = time.time()
+            fps_frames = 0
+
+        ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
         frame_bytes = buffer.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
     cap.release()
 
-
 @app.route('/video_feed')
 def video_feed():
-    return Response(generate_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/set_exercise', methods=['POST'])
 def set_exercise():
-    global current_exercise, rep_count, state, squat_down, curl_down, pushup_down
+    global state
     data = request.get_json()
     exercise = data.get('exercise', 'squat')
-    current_exercise = exercise
-    rep_count = 0
-    state = "UP"
-    squat_down = False
-    curl_down = False
-    pushup_down = False
-    return jsonify({"status": "success", "exercise": current_exercise})
-
+    with state_lock:
+        state.exercise = exercise
+        state.reps = 0
+        state.phase = "UP"
+        state.cycle_ready = False
+        state.feedback = f"Ready for {EXERCISE_CONFIG[exercise]['name']}"
+        state.status = "Waiting"
+    return jsonify({"status": "success", "exercise": exercise})
 
 @app.route('/get_stats')
 def get_stats():
-    global rep_count, angle_value, feedback_msg, posture_status, current_exercise
-    return jsonify({
-        "exercise": current_exercise.capitalize(),
-        "reps": rep_count,
-        "angle": int(angle_value),
-        "feedback": feedback_msg,
-        "status": posture_status
-    })
+    global state
+    with state_lock:
+        return jsonify({
+            "exercise": EXERCISE_CONFIG[state.exercise]["name"],
+            "reps": state.reps,
+            "angle": int(state.angle),
+            "feedback": state.feedback,
+            "status": state.status,
+        })
 
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print("=" * 50)
+    print("  FitSphere AI Trainer Backend")
+    print("  Running on http://0.0.0.0:5000")
+    print("=" * 50)
+    app.run(debug=False, host='0.0.0.0', port=5000, threaded=True)
