@@ -168,24 +168,26 @@ export function AITrainerEmbed() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
       console.log('[AITrainer] Camera stream obtained');
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadeddata = async () => {
-          console.log('[AITrainer] Video onloadeddata fired, readyState:', videoRef.current?.readyState);
-          try {
-            await videoRef.current!.play();
-            console.log('[AITrainer] video.play() completed, readyState:', videoRef.current?.readyState);
-            setCameraOn(true);
-            setStatus('Ready');
-            animRef.current = requestAnimationFrame(predictLoop);
-          } catch (err) {
-            console.error('[AITrainer] Video play() failed:', err);
-            setStatus('Video play failed');
-          }
+      if (!videoRef.current) return;
+      videoRef.current.srcObject = stream;
+      await new Promise<void>((resolve, reject) => {
+        videoRef.current!.onloadedmetadata = () => {
+          console.log('[AITrainer] onloadedmetadata fired');
+          videoRef.current!.play()
+            .then(() => {
+              console.log('[AITrainer] video.play() resolved, readyState:', videoRef.current?.readyState);
+              resolve();
+            })
+            .catch(reject);
         };
-      }
+        videoRef.current!.onerror = () => reject(new Error('Video element error'));
+      });
+      console.log('[AITrainer] Camera ready, starting prediction loop');
+      setCameraOn(true);
+      setStatus('Ready');
+      animRef.current = requestAnimationFrame(predictLoop);
     } catch (err) {
-      console.error('[AITrainer] Camera access denied:', err);
+      console.error('[AITrainer] Camera start failed:', err);
       setCameraOn(false);
       setStatus('Camera access denied');
       setFeedback('Allow camera access in your browser settings');
@@ -197,18 +199,18 @@ export function AITrainerEmbed() {
       try {
         setStatus('Loading AI model...');
         const vision = await FilesetResolver.forVisionTasks(
-          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm'
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm'
         );
         const landmarker = await PoseLandmarker.createFromOptions(vision, {
           baseOptions: {
             modelAssetPath:
-              'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task',
+              'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
             delegate: 'GPU',
           },
           runningMode: 'VIDEO',
           numPoses: 1,
-          minPoseDetectionConfidence: 0.7,
-          minTrackingConfidence: 0.7,
+          minPoseDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
         });
         landmarkerRef.current = landmarker;
         console.log('[AITrainer] PoseLandmarker model loaded successfully');
