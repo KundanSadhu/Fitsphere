@@ -20,6 +20,7 @@ function calcAngle(a: NormalizedLandmark, b: NormalizedLandmark, c: NormalizedLa
 }
 
 export function AITrainerEmbed() {
+  console.log('[AITrainer] v2.0 - landmark fix deployed');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
