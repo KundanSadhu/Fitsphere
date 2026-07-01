@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { Camera, Dumbbell, Activity, Target, ChevronDown, WifiOff, Smartphone } from 'lucide-react';
+import { Camera, Dumbbell, Activity, Target, ChevronDown, WifiOff, Smartphone, RefreshCw } from 'lucide-react';
 import { PoseLandmarker, FilesetResolver, type NormalizedLandmark } from '@mediapipe/tasks-vision';
 
 type Exercise = 'squat' | 'pushup' | 'curl';
@@ -24,31 +24,24 @@ function isMobile(): boolean {
     || (navigator.maxTouchPoints > 0 && window.innerWidth < 768);
 }
 
-function getMobileCameraConstraints() {
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (isIOS) {
-    return { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } };
-  }
-  return { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } };
-}
-
 export function AITrainerEmbed() {
   const mobile = isMobile();
-  console.log('[AITrainer] v2.1 - mobile responsive, device:', mobile ? 'mobile' : 'desktop');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
   const animRef = useRef<number>(0);
   const frameSkipRef = useRef(0);
 
-  const [status, setStatus] = useState<string>('Initializing...');
+  const [status, setStatus] = useState<string>('Tap to start camera');
   const [exercise, setExercise] = useState<Exercise>('squat');
   const [reps, setReps] = useState(0);
   const [angle, setAngle] = useState(0);
-  const [feedback, setFeedback] = useState('Stand in view of camera');
+  const [feedback, setFeedback] = useState('Tap the button below to start');
   const [posture, setPosture] = useState<'Good' | 'Fix' | 'Waiting'>('Waiting');
   const [cameraOn, setCameraOn] = useState(false);
+  const [cameraDenied, setCameraDenied] = useState(false);
   const [expanded, setExpanded] = useState(!mobile);
+  const [modelReady, setModelReady] = useState(false);
 
   const phaseRef = useRef(false);
   const repCountRef = useRef(0);
@@ -193,13 +186,28 @@ export function AITrainerEmbed() {
   }, [drawSkeleton, detectExercise, mobile]);
 
   const startCamera = useCallback(async () => {
+    setCameraDenied(false);
+    setStatus('Starting camera...');
+
+    const tryGetStream = async (constraints: MediaStreamConstraints): Promise<MediaStream> => {
+      return navigator.mediaDevices.getUserMedia(constraints);
+    };
+
     try {
-      const constraints: MediaStreamConstraints = {
-        video: mobile ? getMobileCameraConstraints() : { width: 640, height: 480, facingMode: 'user' },
-        audio: false,
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      if (!videoRef.current) return;
+      let stream: MediaStream;
+      try {
+        stream = await tryGetStream({ video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } }, audio: false });
+      } catch {
+        console.warn('[AITrainer] Preferred constraints failed, trying minimal');
+        try {
+          stream = await tryGetStream({ video: { facingMode: 'user' }, audio: false });
+        } catch {
+          console.warn('[AITrainer] facingMode failed, trying any video');
+          stream = await tryGetStream({ video: true, audio: false });
+        }
+      }
+
+      if (!videoRef.current) { stream.getTracks().forEach(t => t.stop()); return; }
       videoRef.current.srcObject = stream;
       await new Promise<void>((resolve, reject) => {
         videoRef.current!.onloadedmetadata = () => {
@@ -210,23 +218,26 @@ export function AITrainerEmbed() {
         videoRef.current!.onerror = () => reject(new Error('Video element error'));
       });
       setCameraOn(true);
+      setCameraDenied(false);
       setStatus('Ready');
+      setFeedback('Step back so your full body is visible');
       animRef.current = requestAnimationFrame(predictLoop);
     } catch (err: any) {
       console.error('[AITrainer] Camera start failed:', err);
       setCameraOn(false);
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setStatus('Camera access denied');
-        setFeedback(mobile ? 'Allow camera in your browser settings, then refresh' : 'Allow camera access in your browser settings');
+        setCameraDenied(true);
+        setStatus('Camera blocked');
+        setFeedback('Tap below to learn how to unblock');
       } else if (err.name === 'NotFoundError') {
         setStatus('No camera found');
-        setFeedback('Connect a camera to your device');
+        setFeedback('This device has no camera');
       } else {
         setStatus('Camera error');
-        setFeedback('Could not start camera. Try refreshing.');
+        setFeedback('Could not start camera. Tap to retry.');
       }
     }
-  }, [predictLoop, mobile]);
+  }, [predictLoop]);
 
   useEffect(() => {
     let cancelled = false;
@@ -266,7 +277,9 @@ export function AITrainerEmbed() {
         }
         if (cancelled) { landmarker.close(); return; }
         landmarkerRef.current = landmarker;
-        startCamera();
+        setModelReady(true);
+        setStatus('Model loaded — tap to start camera');
+        setFeedback('Ready! Tap the button to enable your camera');
       } catch (e) {
         console.error('[AITrainer] Model failed to load:', e);
         setStatus('Model failed to load');
@@ -282,7 +295,7 @@ export function AITrainerEmbed() {
       }
       landmarkerRef.current?.close();
     };
-  }, [startCamera]);
+  }, []);
 
   const switchExercise = (ex: Exercise) => {
     setExercise(ex);
@@ -316,7 +329,7 @@ export function AITrainerEmbed() {
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />LIVE
                 </span>
               )}
-              {!cameraOn && status === 'Camera access denied' && (
+              {!cameraOn && cameraDenied && (
                 <span className="inline-flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-[8px] md:text-[9px] font-bold border border-red-200 shrink-0">
                   <WifiOff className="w-2 h-2 md:w-2.5 md:h-2.5" />NO CAMERA
                 </span>
@@ -360,18 +373,43 @@ export function AITrainerEmbed() {
                       <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-3 md:mb-4">
                         <Camera className="w-5 h-5 md:w-7 md:h-7 text-slate-500" />
                       </div>
-                      <p className="text-slate-300 font-bold text-xs md:text-sm mb-1">
-                        {status === 'Camera access denied' ? 'Camera Blocked' : 'Camera Offline'}
-                      </p>
-                      <p className="text-slate-500 text-[10px] md:text-[11px] max-w-xs mx-auto leading-relaxed">
-                        {status === 'Camera access denied'
-                          ? 'Allow camera access in your browser settings, then refresh.'
-                          : status === 'No camera found'
-                            ? 'No camera detected on this device.'
-                            : status === 'Loading AI model...'
-                              ? 'Downloading pose detection model...'
-                              : 'Enable camera permissions to start tracking.'}
-                      </p>
+                      {cameraDenied ? (
+                        <>
+                          <p className="text-red-400 font-bold text-xs md:text-sm mb-2">Camera Blocked by Browser</p>
+                          <p className="text-slate-500 text-[10px] md:text-[11px] max-w-xs mx-auto leading-relaxed mb-3">
+                            Tap the <strong>lock icon</strong> or <strong>camera icon</strong> in your address bar, then set Camera to <strong>"Allow"</strong>. Or:
+                          </p>
+                          <ol className="text-slate-500 text-[9px] md:text-[10px] text-left max-w-[240px] mx-auto space-y-1 mb-4 list-decimal list-inside">
+                            <li>Tap the 3-dot menu in Chrome</li>
+                            <li>Tap <strong>Site settings</strong></li>
+                            <li>Tap <strong>Camera</strong></li>
+                            <li>Find this site and set to <strong>Allow</strong></li>
+                            <li>Refresh this page</li>
+                          </ol>
+                          <button
+                            onClick={startCamera}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-[10px] md:text-xs font-black uppercase tracking-wider border-2 border-primary shadow-[2px_2px_0px_#191A23] active:translate-y-0.5 active:shadow-none touch-manipulation"
+                          >
+                            <RefreshCw className="w-3 h-3" />Retry Camera
+                          </button>
+                        </>
+                      ) : !modelReady ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-slate-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                          <p className="text-slate-300 font-bold text-xs md:text-sm mb-1">Loading pose detection model...</p>
+                          <p className="text-slate-500 text-[10px] md:text-[11px]">First load takes ~5 seconds</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-slate-300 font-bold text-xs md:text-sm mb-3">Camera Ready</p>
+                          <button
+                            onClick={startCamera}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-[10px] md:text-xs font-black uppercase tracking-wider border-2 border-primary shadow-[2px_2px_0px_#191A23] active:translate-y-0.5 active:shadow-none touch-manipulation"
+                          >
+                            <Camera className="w-3 h-3" />Start Camera
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
