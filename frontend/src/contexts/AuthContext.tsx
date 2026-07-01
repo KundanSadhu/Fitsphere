@@ -11,11 +11,12 @@ import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firest
 import { auth, db, googleProvider } from '../lib/firebase';
 
 interface UserData {
+  id: string;
   uid: string;
   email: string;
   name: string;
   photoURL: string;
-  role: 'user' | 'admin';
+  role: 'client' | 'trainer' | 'admin';
   provider: string;
   createdAt: string;
   lastLogin: string;
@@ -53,11 +54,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserData(userSnap.data() as UserData);
     } else {
       const newUser: UserData = {
+        id: firebaseUser.uid,
         uid: firebaseUser.uid,
         email: firebaseUser.email || '',
         name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
         photoURL: firebaseUser.photoURL || '',
-        role: 'user',
+        role: 'client',
         provider: 'google.com',
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
@@ -111,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserData(null);
   };
 
-  const isAdmin = userData?.role === 'admin';
+  const isAdmin = userData?.role === 'admin' || userData?.role === 'trainer';
 
   return (
     <AuthContext.Provider value={{ user, userData, loading, isAdmin, signInWithGoogle, logout }}>
