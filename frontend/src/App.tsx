@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Sun, Moon } from 'lucide-react';
+import { Sparkles, Sun, Moon, Loader2 } from 'lucide-react';
 
 import { LandingPage } from './pages/LandingPage';
 import { Onboarding } from './pages/Onboarding';
@@ -21,7 +21,8 @@ import { MobileMoreOverlay } from './components/MobileMoreOverlay';
 import { User, WorkoutPlan, DietPlan, Challenge, Post, Product, CartItem, WeightRecord } from './types';
 import { INITIAL_USER, WORKOUT_PLANS, DIET_PLANS, CHALLENGES, INITIAL_LEADERBOARD, SHOP_PRODUCTS, INITIAL_FEED } from './data';
 
-import { AuthPage } from './pages/Auth';
+import { LoginPage } from './pages/LoginPage';
+import { useAuth } from './contexts/AuthContext';
 import { api } from './lib/api';
 
 export default function App() {
@@ -43,8 +44,8 @@ export default function App() {
 
   const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [showAuthPage, setShowAuthPage] = useState<boolean>(true);
+  const { user: firebaseUser, loading: authLoading, logout: firebaseLogout } = useAuth();
+  const [showLoginPage, setShowLoginPage] = useState<boolean>(false);
   const [onboardingStep, setOnboardingStep] = useState<number>(0);
   const [user, setUser] = useState<User>(INITIAL_USER);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -111,33 +112,6 @@ export default function App() {
     const savedCart = localStorage.getItem('fitsphere_cart');
     if (savedCart) {
       setCart(JSON.parse(savedCart));
-    }
-
-    const token = localStorage.getItem('fitsphere_token');
-    if (token) {
-      api.auth.me().then(backendUser => {
-        if (backendUser) {
-          applyUserState(backendUser);
-          setIsAuthenticated(true);
-          setNeonAvailable(true);
-        } else {
-          const backupAuth = localStorage.getItem('fitsphere_auth');
-          if (backupAuth === 'true') {
-            setIsAuthenticated(true);
-          }
-        }
-      }).catch(() => {
-        setNeonAvailable(false);
-        const backupAuth = localStorage.getItem('fitsphere_auth');
-        if (backupAuth === 'true') {
-          setIsAuthenticated(true);
-        }
-      });
-    } else {
-      const backupAuth = localStorage.getItem('fitsphere_auth');
-      if (backupAuth === 'true') {
-        setIsAuthenticated(true);
-      }
     }
   }, []);
 
@@ -302,8 +276,6 @@ export default function App() {
 
   const startOnboardingSequence = () => {
     setOnboardingStep(1);
-    setIsAuthenticated(true);
-    localStorage.setItem('fitsphere_auth', 'true');
   };
 
   const handleOnboardingComplete = () => {
@@ -333,37 +305,29 @@ export default function App() {
     }, 2500);
   };
 
-  const handleLogout = () => {
-    api.auth.logout();
-    localStorage.removeItem('fitsphere_auth');
-    localStorage.removeItem('google_access_token');
+  const handleLogout = async () => {
+    await firebaseLogout();
     localStorage.removeItem('fitsphere_user_profile');
-    localStorage.removeItem('fitsphere_token');
-    setIsAuthenticated(false);
+    localStorage.removeItem('fitsphere_cart');
     setOnboardingStep(0);
     setActiveTab('dashboard');
+    setShowLoginPage(false);
   };
 
   const handleDeleteAccount = async () => {
     try {
-      const token = localStorage.getItem('fitsphere_token');
-      if (token) {
-        await fetch('/api/auth/me', {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      }
+      const user = firebaseUser;
+      if (user) await user.delete();
     } catch (e) {
       console.error('Delete account error', e);
-      showNotification('Failed to delete account.');
+      showNotification('Failed to delete account. Try logging out first.');
       return;
     }
-    localStorage.removeItem('fitsphere_auth');
-    localStorage.removeItem('fitsphere_token');
     localStorage.removeItem('fitsphere_user_profile');
-    setIsAuthenticated(false);
+    localStorage.removeItem('fitsphere_cart');
     setOnboardingStep(0);
     setActiveTab('dashboard');
+    setShowLoginPage(false);
     showNotification('Account deleted successfully.');
   };
 
@@ -376,40 +340,42 @@ export default function App() {
         </div>
       )}
 
-      {!isAuthenticated && (
-        <header id="public-sticky-header" className="sticky top-0 bg-theme border-b border-theme z-40 transition-all theme-transition">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md text-white font-extrabold text-xs font-mono">FΩ</div>
-              <span className="text-lg font-black text-theme tracking-tight">FitSphere <span className="text-primary">AI</span></span>
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-xl border border-theme text-theme-muted hover:text-primary hover:border-primary transition-all cursor-pointer"
-                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              >
-                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-              <button id="btn-public-signin" onClick={() => setShowAuthPage(true)} className="nav-link text-xs font-black cursor-pointer transition-all">Sign In</button>
-              <button id="btn-public-join" onClick={startOnboardingSequence} className="btn-cta text-[11px] font-black px-5 py-2.5 text-sm cursor-pointer">Join Free</button>
-            </div>
+      {authLoading ? (
+        <div className="min-h-screen bg-theme flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            <p className="text-sm font-bold text-theme-muted">Loading...</p>
           </div>
-        </header>
-      )}
-
-      <div id="core-frame-element" className="grow w-full bg-theme theme-transition">
-        {!isAuthenticated ? (
-          showAuthPage ? (
-            <AuthPage onSuccess={() => {
-              setShowAuthPage(false);
-              setIsAuthenticated(true);
-              localStorage.setItem('fitsphere_auth', 'true');
-            }} neonAvailable={neonAvailable} />
-          ) : (
-            <LandingPage onStartOnboarding={() => setShowAuthPage(true)} onQuickDashboard={() => setShowAuthPage(true)} />
-          )
-        ) : onboardingStep > 0 ? (
+        </div>
+      ) : !firebaseUser && !showLoginPage ? (
+        <>
+          <header id="public-sticky-header" className="sticky top-0 bg-theme border-b border-theme z-40 transition-all theme-transition">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md text-white font-extrabold text-xs font-mono">FΩ</div>
+                <span className="text-lg font-black text-theme tracking-tight">FitSphere <span className="text-primary">AI</span></span>
+              </div>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={toggleDarkMode}
+                  className="p-2 rounded-xl border border-theme text-theme-muted hover:text-primary hover:border-primary transition-all cursor-pointer"
+                  title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                  {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+                <button id="btn-public-signin" onClick={() => setShowLoginPage(true)} className="nav-link text-xs font-black cursor-pointer transition-all">Sign In</button>
+              </div>
+            </div>
+          </header>
+          <div id="core-frame-element" className="grow w-full bg-theme theme-transition">
+            <LandingPage onStartOnboarding={() => setShowLoginPage(true)} onQuickDashboard={() => setShowLoginPage(true)} />
+          </div>
+        </>
+      ) : !firebaseUser ? (
+        <div id="core-frame-element" className="grow w-full bg-theme theme-transition">
+          <LoginPage />
+        </div>
+      ) : onboardingStep > 0 ? (
           <Onboarding
             onboardingStep={onboardingStep} setOnboardingStep={setOnboardingStep}
             onboardingData={onboardingData} setOnboardingData={setOnboardingData}
@@ -436,7 +402,6 @@ export default function App() {
             <MobileMoreOverlay isOpen={isMobileMoreOpen} onClose={() => setIsMobileMoreOpen(false)} activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
           </div>
         )}
-      </div>
 
       <footer id="app-static-footer" className="py-4 text-center text-[9px] font-mono text-theme-dim bg-theme border-t border-theme select-none theme-transition">
         © 2026 FitSphere AI Ecosystem • Built securely utilizing deep neural biomechanical models
