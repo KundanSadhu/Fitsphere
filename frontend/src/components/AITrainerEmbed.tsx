@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { Camera, Dumbbell, Activity, Target, ChevronDown, WifiOff } from 'lucide-react';
+import { Camera, Dumbbell, Activity, Target, ChevronDown, WifiOff, Smartphone } from 'lucide-react';
 import { PoseLandmarker, FilesetResolver, type NormalizedLandmark } from '@mediapipe/tasks-vision';
 
 type Exercise = 'squat' | 'pushup' | 'curl';
@@ -19,12 +19,27 @@ function calcAngle(a: NormalizedLandmark, b: NormalizedLandmark, c: NormalizedLa
   return angle * (180 / Math.PI);
 }
 
+function isMobile(): boolean {
+  return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || (navigator.maxTouchPoints > 0 && window.innerWidth < 768);
+}
+
+function getMobileCameraConstraints() {
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isIOS) {
+    return { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } };
+  }
+  return { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } };
+}
+
 export function AITrainerEmbed() {
-  console.log('[AITrainer] v2.0 - landmark fix deployed');
+  const mobile = isMobile();
+  console.log('[AITrainer] v2.1 - mobile responsive, device:', mobile ? 'mobile' : 'desktop');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
   const animRef = useRef<number>(0);
+  const frameSkipRef = useRef(0);
 
   const [status, setStatus] = useState<string>('Initializing...');
   const [exercise, setExercise] = useState<Exercise>('squat');
@@ -33,7 +48,7 @@ export function AITrainerEmbed() {
   const [feedback, setFeedback] = useState('Stand in view of camera');
   const [posture, setPosture] = useState<'Good' | 'Fix' | 'Waiting'>('Waiting');
   const [cameraOn, setCameraOn] = useState(false);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(!mobile);
 
   const phaseRef = useRef(false);
   const repCountRef = useRef(0);
@@ -58,7 +73,7 @@ export function AITrainerEmbed() {
     ];
 
     ctx.strokeStyle = '#00E5FF';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = mobile ? 2 : 3;
     for (const [i, j] of connections) {
       const a = landmarks[i], b = landmarks[j];
       if (a && b && a.visibility && a.visibility > 0.5 && b.visibility && b.visibility > 0.5) {
@@ -70,14 +85,15 @@ export function AITrainerEmbed() {
     }
 
     ctx.fillStyle = '#00E5FF';
+    const dotRadius = mobile ? 3 : 5;
     for (const lm of landmarks) {
       if (lm.visibility && lm.visibility > 0.5) {
         ctx.beginPath();
-        ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 5, 0, 2 * Math.PI);
+        ctx.arc(lm.x * canvas.width, lm.y * canvas.height, dotRadius, 0, 2 * Math.PI);
         ctx.fill();
       }
     }
-  }, []);
+  }, [mobile]);
 
   const detectExercise = useCallback((landmarks: NormalizedLandmark[]) => {
     const get = (i: number) => landmarks[i];
@@ -140,7 +156,12 @@ export function AITrainerEmbed() {
     const video = videoRef.current;
     const landmarker = landmarkerRef.current;
     if (!video || !landmarker || video.readyState < 2) {
-      console.log('[AITrainer] predictLoop skipped: readyState=', video?.readyState, 'landmarker=', !!landmarker);
+      animRef.current = requestAnimationFrame(predictLoop);
+      return;
+    }
+
+    frameSkipRef.current += 1;
+    if (mobile && frameSkipRef.current % 3 !== 0) {
       animRef.current = requestAnimationFrame(predictLoop);
       return;
     }
@@ -159,7 +180,6 @@ export function AITrainerEmbed() {
       drawSkeleton(landmarks);
       detectExercise(landmarks);
     } else {
-      console.log('[AITrainer] No pose landmarks at ts', Math.round(ts), '- cameraOn:', cameraOn, 'videoReady:', video.readyState);
       const canvas = canvasRef.current;
       if (canvas) {
         const ctx = canvas.getContext('2d');
@@ -170,58 +190,82 @@ export function AITrainerEmbed() {
     }
 
     animRef.current = requestAnimationFrame(predictLoop);
-  }, [drawSkeleton, detectExercise]);
+  }, [drawSkeleton, detectExercise, mobile]);
 
   const startCamera = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
-      console.log('[AITrainer] Camera stream obtained');
+      const constraints: MediaStreamConstraints = {
+        video: mobile ? getMobileCameraConstraints() : { width: 640, height: 480, facingMode: 'user' },
+        audio: false,
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       if (!videoRef.current) return;
       videoRef.current.srcObject = stream;
       await new Promise<void>((resolve, reject) => {
         videoRef.current!.onloadedmetadata = () => {
-          console.log('[AITrainer] onloadedmetadata fired');
           videoRef.current!.play()
-            .then(() => {
-              console.log('[AITrainer] video.play() resolved, readyState:', videoRef.current?.readyState);
-              resolve();
-            })
+            .then(() => resolve())
             .catch(reject);
         };
         videoRef.current!.onerror = () => reject(new Error('Video element error'));
       });
-      console.log('[AITrainer] Camera ready, starting prediction loop');
       setCameraOn(true);
       setStatus('Ready');
       animRef.current = requestAnimationFrame(predictLoop);
-    } catch (err) {
+    } catch (err: any) {
       console.error('[AITrainer] Camera start failed:', err);
       setCameraOn(false);
-      setStatus('Camera access denied');
-      setFeedback('Allow camera access in your browser settings');
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setStatus('Camera access denied');
+        setFeedback(mobile ? 'Allow camera in your browser settings, then refresh' : 'Allow camera access in your browser settings');
+      } else if (err.name === 'NotFoundError') {
+        setStatus('No camera found');
+        setFeedback('Connect a camera to your device');
+      } else {
+        setStatus('Camera error');
+        setFeedback('Could not start camera. Try refreshing.');
+      }
     }
-  }, [predictLoop]);
+  }, [predictLoop, mobile]);
 
   useEffect(() => {
+    let cancelled = false;
     const init = async () => {
       try {
         setStatus('Loading AI model...');
         const vision = await FilesetResolver.forVisionTasks(
           'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm'
         );
-        const landmarker = await PoseLandmarker.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath:
-              'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
-            delegate: 'GPU',
-          },
-          runningMode: 'VIDEO',
-          numPoses: 1,
-          minPoseDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5,
-        });
+        if (cancelled) return;
+        let landmarker: PoseLandmarker;
+        try {
+          landmarker = await PoseLandmarker.createFromOptions(vision, {
+            baseOptions: {
+              modelAssetPath:
+                'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+              delegate: 'GPU',
+            },
+            runningMode: 'VIDEO',
+            numPoses: 1,
+            minPoseDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5,
+          });
+        } catch {
+          console.warn('[AITrainer] GPU delegate failed, falling back to CPU');
+          landmarker = await PoseLandmarker.createFromOptions(vision, {
+            baseOptions: {
+              modelAssetPath:
+                'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+              delegate: 'CPU',
+            },
+            runningMode: 'VIDEO',
+            numPoses: 1,
+            minPoseDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5,
+          });
+        }
+        if (cancelled) { landmarker.close(); return; }
         landmarkerRef.current = landmarker;
-        console.log('[AITrainer] PoseLandmarker model loaded successfully');
         startCamera();
       } catch (e) {
         console.error('[AITrainer] Model failed to load:', e);
@@ -231,6 +275,7 @@ export function AITrainerEmbed() {
     };
     init();
     return () => {
+      cancelled = true;
       cancelAnimationFrame(animRef.current);
       if (videoRef.current?.srcObject) {
         (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
@@ -249,123 +294,130 @@ export function AITrainerEmbed() {
   };
 
   return (
-    <div className="rounded-[24px] bg-white border-2 border-[#191A23] shadow-[4px_4px_0px_#191A23] overflow-hidden">
+    <div className="rounded-[16px] md:rounded-[24px] bg-white border-2 border-[#191A23] shadow-[4px_4px_0px_#191A23] overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between gap-4 p-4 md:p-5 hover:bg-slate-50 transition-colors"
+        className="w-full flex items-center justify-between gap-2 md:gap-4 p-3 md:p-5 hover:bg-slate-50 transition-colors"
       >
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${cameraOn ? 'bg-primary/10' : 'bg-amber-50'}`}>
-            <Camera className={`w-5 h-5 ${cameraOn ? 'text-primary' : 'text-amber-500'}`} />
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
+          <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center shrink-0 ${cameraOn ? 'bg-primary/10' : 'bg-amber-50'}`}>
+            <Camera className={`w-4 h-4 md:w-5 md:h-5 ${cameraOn ? 'text-primary' : 'text-amber-500'}`} />
           </div>
-          <div className="text-left">
-            <h3 className="font-black text-[#191A23] text-sm flex items-center gap-2">
+          <div className="text-left min-w-0">
+            <h3 className="font-black text-[#191A23] text-xs md:text-sm flex items-center gap-1.5 md:gap-2 truncate">
               AI Trainer
+              {mobile && !expanded && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[8px] font-bold shrink-0">
+                  <Smartphone className="w-2.5 h-2.5" />MOBILE
+                </span>
+              )}
               {cameraOn && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[9px] font-bold border border-green-200">
+                <span className="inline-flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[8px] md:text-[9px] font-bold border border-green-200 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />LIVE
                 </span>
               )}
               {!cameraOn && status === 'Camera access denied' && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-[9px] font-bold border border-red-200">
-                  <WifiOff className="w-2.5 h-2.5" />NO CAMERA
+                <span className="inline-flex items-center gap-1 px-1.5 md:px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-[8px] md:text-[9px] font-bold border border-red-200 shrink-0">
+                  <WifiOff className="w-2 h-2 md:w-2.5 md:h-2.5" />NO CAMERA
                 </span>
               )}
             </h3>
-            <p className="text-[10px] text-slate-500 font-semibold">
+            <p className="text-[9px] md:text-[10px] text-slate-500 font-semibold truncate">
               {status}
             </p>
           </div>
         </div>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} />
       </button>
 
       {expanded && (
-        <div className="px-4 md:px-5 pb-4 md:pb-5 space-y-4">
-          <div className="flex gap-2 flex-wrap">
+        <div className="px-3 md:px-5 pb-3 md:pb-5 space-y-3 md:space-y-4">
+          <div className="flex gap-1.5 md:gap-2 overflow-x-auto pb-1 scrollbar-none -mx-3 md:mx-0 px-3 md:px-0">
             {(Object.entries(EXERCISE_META) as [Exercise, typeof EXERCISE_META[Exercise]][]).map(([key, meta]) => (
               <button
                 key={key}
                 onClick={() => switchExercise(key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-wider border-2 transition-all ${
+                className={`flex items-center gap-1 md:gap-1.5 px-2.5 md:px-3 py-1.5 md:py-1.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider border-2 transition-all shrink-0 touch-manipulation ${
                   exercise === key
                     ? 'bg-primary text-white border-primary shadow-[2px_2px_0px_#191A23]'
                     : 'bg-white text-slate-600 border-slate-300 hover:border-slate-500'
                 }`}
               >
-                <span className="text-xs">{meta.icon}</span>
+                <span className="text-[10px] md:text-xs">{meta.icon}</span>
                 {meta.label}
               </button>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+            <div className="md:col-span-2">
               <div className="rounded-xl bg-black overflow-hidden relative aspect-video border-2 border-slate-800">
                 <video ref={videoRef} className="w-full h-full object-cover scale-x-[-1]" muted playsInline />
                 <canvas ref={canvasRef} className="absolute inset-0 w-full h-full scale-x-[-1]" />
                 {!cameraOn && (
                   <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-                    <div className="text-center px-6">
-                      <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-4">
-                        <Camera className="w-7 h-7 text-slate-500" />
+                    <div className="text-center px-4 md:px-6">
+                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-3 md:mb-4">
+                        <Camera className="w-5 h-5 md:w-7 md:h-7 text-slate-500" />
                       </div>
-                      <p className="text-slate-300 font-bold text-sm mb-1">
+                      <p className="text-slate-300 font-bold text-xs md:text-sm mb-1">
                         {status === 'Camera access denied' ? 'Camera Blocked' : 'Camera Offline'}
                       </p>
-                      <p className="text-slate-500 text-[11px] max-w-xs mx-auto leading-relaxed">
+                      <p className="text-slate-500 text-[10px] md:text-[11px] max-w-xs mx-auto leading-relaxed">
                         {status === 'Camera access denied'
                           ? 'Allow camera access in your browser settings, then refresh.'
-                          : status === 'Loading AI model...'
-                            ? 'Downloading pose detection model...'
-                            : 'Enable camera permissions to start tracking.'}
+                          : status === 'No camera found'
+                            ? 'No camera detected on this device.'
+                            : status === 'Loading AI model...'
+                              ? 'Downloading pose detection model...'
+                              : 'Enable camera permissions to start tracking.'}
                       </p>
                     </div>
                   </div>
                 )}
                 {cameraOn && (
-                  <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-full text-[10px] font-bold border border-white/10 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <div className="absolute top-2 left-2 md:top-3 md:left-3 bg-black/70 backdrop-blur-sm px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 flex items-center gap-1 md:gap-1.5">
+                    <span className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-green-400 animate-pulse" />
                     <span className="text-green-400">LIVE</span>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <Dumbbell className="w-3 h-3 text-primary" />
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Exercise</p>
+            <div className="grid grid-cols-2 gap-1.5 md:gap-2.5">
+              <div className="p-2 md:p-3 rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
+                <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-1.5">
+                  <Dumbbell className="w-2.5 h-2.5 md:w-3 md:h-3 text-primary" />
+                  <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-wider">Exercise</p>
                 </div>
-                <p className="text-base font-black text-[#191A23]">{EXERCISE_META[exercise].label}</p>
+                <p className="text-sm md:text-base font-black text-[#191A23]">{EXERCISE_META[exercise].label}</p>
               </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <Target className="w-3 h-3 text-blue-500" />
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Reps</p>
+              <div className="p-2 md:p-3 rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
+                <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-1.5">
+                  <Target className="w-2.5 h-2.5 md:w-3 md:h-3 text-blue-500" />
+                  <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-wider">Reps</p>
                 </div>
-                <p className="text-base font-black text-[#191A23]">{reps}</p>
+                <p className="text-sm md:text-base font-black text-[#191A23]">{reps}</p>
               </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <Activity className="w-3 h-3 text-amber-500" />
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Angle</p>
+              <div className="p-2 md:p-3 rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
+                <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-1.5">
+                  <Activity className="w-2.5 h-2.5 md:w-3 md:h-3 text-amber-500" />
+                  <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-wider">Angle</p>
                 </div>
-                <p className="text-base font-black text-amber-500">{angle}°</p>
+                <p className="text-sm md:text-base font-black text-amber-500">{angle}°</p>
               </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <Camera className="w-3 h-3 text-emerald-500" />
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Posture</p>
+              <div className="p-2 md:p-3 rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
+                <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-1.5">
+                  <Camera className="w-2.5 h-2.5 md:w-3 md:h-3 text-emerald-500" />
+                  <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-wider">Posture</p>
                 </div>
-                <p className={`text-sm font-black ${posture === 'Good' ? 'text-emerald-600' : posture === 'Fix' ? 'text-red-500' : 'text-slate-400'}`}>
+                <p className={`text-[11px] md:text-sm font-black ${posture === 'Good' ? 'text-emerald-600' : posture === 'Fix' ? 'text-red-500' : 'text-slate-400'}`}>
                   {posture === 'Good' ? '✓ Good' : posture === 'Fix' ? '✗ Fix' : '--'}
                 </p>
               </div>
-              <div className="col-span-2 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
-                <p className="text-[9px] font-black text-blue-400 uppercase tracking-wider mb-1">Coach Feedback</p>
-                <p className="text-xs font-bold text-slate-800 leading-relaxed">{feedback}</p>
+              <div className="col-span-2 p-2 md:p-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+                <p className="text-[8px] md:text-[9px] font-black text-blue-400 uppercase tracking-wider mb-0.5 md:mb-1">Coach Feedback</p>
+                <p className="text-[10px] md:text-xs font-bold text-slate-800 leading-relaxed">{feedback}</p>
               </div>
             </div>
           </div>
